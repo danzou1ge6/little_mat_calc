@@ -39,12 +39,11 @@ impl<'a, T> Mat for SliceMatrix<'a, T> where T: LinearElem {
     fn rows_raw(&self) -> usize { self.rows }
     fn cols_raw(&self) -> usize { self.cols }
 
-    /// Index into `origin`, regardless of if `origin` is transposed
     unsafe fn get_unchecked_raw(&self, i: usize, j: usize) -> &T {
-        (*self.origin).get_unchecked_raw(i + self.row_begin, j + self.col_begin)
+        (*self.origin).get_unchecked(i + self.row_begin, j + self.col_begin)
     }
     unsafe fn get_mut_unchecked_raw(&mut self, i: usize, j: usize) -> &mut T {
-        (*self.origin).get_mut_unchecked_raw(i + self.row_begin, j + self.col_begin)
+        (*self.origin).get_mut_unchecked(i + self.row_begin, j + self.col_begin)
     }
 
 }
@@ -69,9 +68,9 @@ mod test {
 
     #[test]
     fn test_slice_transpose() {
-        let m = mat_![1 2; 3 4;].unwrap();
+        let m = mat_![1 2; 3 4;];
         let slice = m.row(0).unwrap().transposed();
 
-        assert_eq!(slice.clone_data(), mat_![1; 2;].unwrap());
+        assert_eq!(slice.clone_data(), mat_![1; 2;]);
     }
 }

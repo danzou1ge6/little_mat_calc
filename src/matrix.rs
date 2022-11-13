@@ -257,7 +257,7 @@ pub trait Mat{
         ].unwrap();
 
         let mut augmented = EliminatedMatrix::eliminated(augmented);
-        augmented.reduced();
+        augmented.reduce();
 
         if augmented.pivot_cols.last().unwrap().unwrap() >= augmented.rows() {
             let rank = augmented.pivot_cols

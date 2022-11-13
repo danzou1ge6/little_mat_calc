@@ -87,9 +87,10 @@ impl<T, M> EliminatedMatrix<T, M> where M: Mat<Item=T>, T: LinearElem {
             }
         }
     }
+    pub fn simplified(mut self) -> Self { self.simplify(); self }
 
     /// Using row transformations to make all elements above a pivot zeros
-    pub fn reduced(&mut self) {
+    pub fn reduce(&mut self) {
         self.simplify();
 
         unsafe {
@@ -123,6 +124,7 @@ impl<T, M> EliminatedMatrix<T, M> where M: Mat<Item=T>, T: LinearElem {
             }
         }
     }
+    pub fn reduced(mut self) -> Self { self.reduce(); self }
 
     /// Count the rank of the matrix
     pub fn rank(&self) -> usize {
@@ -295,7 +297,7 @@ mod test {
             2   1  -1   1   1;
             3  -2   1  -3   4;
             1   4  -3   5  -2;
-        ].unwrap();
+        ];
         let b: DataMatrix<Rational> = a.convert();
 
         let b = EliminatedMatrix::eliminated(b);
@@ -304,7 +306,7 @@ mod test {
             (Rational(2, 1))  (Rational(1, 1))  (Rational(-1, 1))  (Rational(1, 1)) (Rational(1, 1));
             (Rational(0, 1))  (Rational(-7, 2)) (Rational(5, 2))  (Rational(-9, 2))  (Rational(5, 2));
             (Rational(0, 1))  (Rational(0, 1))   (Rational(0, 1))  (Rational(0, 1)) (Rational(0, 1)); 
-        ].unwrap().convert() as &dyn Mat<Item=_>);
+        ].convert() as &dyn Mat<Item=_>);
 
         b
     }
@@ -312,6 +314,26 @@ mod test {
     #[test]
     fn test_elimination() {
         eliminate();
+    }
+
+    #[test]
+    fn test_transpose_elimination() {
+        let a: DataMatrix<Rational> = mat_![
+            2   3    1;
+            1  -2    4;
+           -1   1   -3;
+            1  -3    5;
+            1   4   -2;
+        ].convert();
+
+        let b = a.transposed().eliminated();
+
+        assert_eq!(&b as &dyn Mat<Item=_>, &mat_![
+            (Rational(2, 1))  (Rational(1, 1))  (Rational(-1, 1))  (Rational(1, 1)) (Rational(1, 1));
+            (Rational(0, 1))  (Rational(-7, 2)) (Rational(5, 2))  (Rational(-9, 2))  (Rational(5, 2));
+            (Rational(0, 1))  (Rational(0, 1))   (Rational(0, 1))  (Rational(0, 1)) (Rational(0, 1)); 
+        ] as &dyn Mat<Item=_>);
+
     }
 
     #[test]
@@ -324,20 +346,20 @@ mod test {
             (Rational(1, 1))  (Rational(1, 2))  (Rational(-1, 2))  (Rational(1, 2)) (Rational(1, 2));
             (Rational(0, 1))  (Rational(1, 1)) (Rational(-5, 7))  (Rational(9, 7))  (Rational(-5, 7));
             (Rational(0, 1))  (Rational(0, 1))   (Rational(0, 1))  (Rational(0, 1)) (Rational(0, 1)); 
-        ].unwrap().convert() as &dyn Mat<Item=Rational>);
+        ].convert() as &dyn Mat<Item=Rational>);
     }
 
     #[test]
     fn test_reduced() {
 
         let mut b = eliminate();
-        b.reduced();
+        b.reduce();
 
         assert_eq!(&b as &dyn Mat<Item=Rational>, &mat_![
             (Rational(1, 1))  (Rational(0, 1))  (Rational(-1, 7))  (Rational(-1, 7)) (Rational(6, 7));
             (Rational(0, 1))  (Rational(1, 1)) (Rational(-5, 7))  (Rational(9, 7))  (Rational(-5, 7));
             (Rational(0, 1))  (Rational(0, 1))   (Rational(0, 1))  (Rational(0, 1)) (Rational(0, 1)); 
-        ].unwrap().convert() as &dyn Mat<Item=Rational>);
+        ].convert() as &dyn Mat<Item=Rational>);
     }
 
     #[test]
@@ -352,7 +374,7 @@ mod test {
             1 2 1 4;
             0 1 3 1;
             0 0 0 0;
-        ].unwrap();
+        ];
         let b = a.eliminated();
         let n = b.null_space().unwrap();
 
@@ -361,7 +383,7 @@ mod test {
             -1 -3;
              0  1;
              1  0;
-        ].unwrap());
+        ]);
     }
 
     #[test]
@@ -370,13 +392,13 @@ mod test {
             1 2 1 4;
             0 1 3 1;
             0 0 0 0;
-        ].unwrap();
+        ];
         let a = a.eliminated();
         let b: DataMatrix<i32> = mat_![
             1;
             2;
             0;
-        ].unwrap();
+        ];
 
         let special_solution = a.special_solution(&b).unwrap();
         assert_eq!(special_solution, mat_![
@@ -384,7 +406,7 @@ mod test {
             2;
             0;
             0;
-        ].unwrap());
+        ]);
     }
 
 }

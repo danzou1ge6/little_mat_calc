@@ -93,11 +93,11 @@ mod test {
         let mut a = mat_![
             1 2;
             0 0;
-        ].unwrap();
+        ];
         let mut b = mat_![
             1;
             1;
-        ].unwrap();
+        ];
 
         use SolveResult::*;
         match solve(&mut a, &mut b).unwrap() {
@@ -112,17 +112,17 @@ mod test {
         let mut a = mat_![
             1 2;
             0 1;
-        ].unwrap();
+        ];
         let mut b = mat_![
             1;
             1;
-        ].unwrap();
+        ];
 
         use SolveResult::*;
         match solve(&mut a, &mut b).unwrap() {
             None => panic!("No solution"),
             Single(sol)
-                => assert_eq!(sol, mat_![-1; 1;].unwrap()),
+                => assert_eq!(sol, mat_![-1; 1;]),
             Infinite { general: _, special: _} => panic!("Got infininte solution"),
         }
     }
@@ -132,19 +132,19 @@ mod test {
         let mut a = mat_![
             1 2 1;
             0 1 1;
-        ].unwrap();
+        ];
         let mut b = mat_![
             1;
             1;
-        ].unwrap();
+        ];
 
         use SolveResult::*;
         match solve(&mut a, &mut b).unwrap() {
             None => panic!("No solution"),
             Single(_) => panic!("Got single solution"),
             Infinite { general, special } => {
-                assert_eq!(general, mat_![ 1; -1; 1; ].unwrap());
-                assert_eq!(special, mat_![ -1; 1; 0; ].unwrap());
+                assert_eq!(general, mat_![ 1; -1; 1; ]);
+                assert_eq!(special, mat_![ -1; 1; 0; ]);
             },
         }
     }

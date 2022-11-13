@@ -5,6 +5,10 @@ use unicode_width::UnicodeWidthStr;
 /// Use [`prettytable`] to format the matrix into string
 pub trait MatPrint<T>: Mat<Item=T> where T: LinearElem + Display {
     fn mat_print_fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.mat_print_buf(f)
+    }
+
+    fn mat_print_buf(&self, buf: &mut impl std::fmt::Write) -> std::fmt::Result {
 
         let mut cell_width = 0;
         let mut s_vec = Vec::new();
@@ -19,11 +23,17 @@ pub trait MatPrint<T>: Mat<Item=T> where T: LinearElem + Display {
         for i in 0..self.rows() {
             for j in 0..self.cols() {
                 let s = &s_vec[i * self.cols() + j];
-                write!(f, "{}{}", " ".repeat(cell_width - UnicodeWidthStr::width(&s[..])), s)?;
+                write!(buf, "{}{}", " ".repeat(cell_width - UnicodeWidthStr::width(&s[..])), s)?;
             }
-            writeln!(f, "")?;
+            writeln!(buf, "")?;
         }
-        write!(f, "")
+        write!(buf, "")
+    }
+
+    fn mat_to_string(&self) -> String {
+        let mut buf = String::new();
+        self.mat_print_buf(&mut buf).unwrap();
+        buf
     }
 }
 

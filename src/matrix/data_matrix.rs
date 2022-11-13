@@ -26,6 +26,10 @@ impl<T> DataMatrix<T> where T: LinearElem {
             data, rows, cols, is_transposed: false
         })
     }
+    
+    pub unsafe fn new_unchecked(data: Vec<T>, rows: usize, cols: usize) -> Self {
+        DataMatrix { data, cols, rows, is_transposed: false }
+    }
 
     /// Explicitly convert a [`DataMatrix`]'s data to another type
     pub fn convert<U: From<T>>(self) -> DataMatrix<U> {

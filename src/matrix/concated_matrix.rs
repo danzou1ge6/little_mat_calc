@@ -89,15 +89,14 @@ impl<'a, T> Mat for ConcatedMatrix<'a, T> where T: LinearElem{
     fn rows_raw(&self) -> usize { self.rows }
     fn cols_raw(&self) -> usize { self.cols }
 
-    /// Index into the block regardless of its transpose state
     unsafe fn get_unchecked_raw(&self, i: usize, j: usize) -> &T {
         let ((block_i, block_j), (i, j)) = self.blocked_index(i, j);
-        self.data.get_unchecked(block_i * self.col_sizes.len() + block_j).get_unchecked_raw(i, j)
+        self.data.get_unchecked(block_i * self.col_sizes.len() + block_j).get_unchecked(i, j)
     }
 
     unsafe fn get_mut_unchecked_raw(&mut self, i: usize, j: usize) -> &mut T {
         let ((block_i, block_j), (i, j)) = self.blocked_index(i, j);
-        self.data.get_unchecked_mut(block_i * self.col_sizes.len() + block_j).get_mut_unchecked_raw(i, j)
+        self.data.get_unchecked_mut(block_i * self.col_sizes.len() + block_j).get_mut_unchecked(i, j)
     }
 
 
@@ -125,12 +124,12 @@ mod test {
     
     #[test]
     fn test_concat_transpose() {
-        let mut a: DataMatrix<i32> = mat_![1 2;].unwrap();
-        let mut b: DataMatrix<i32> = mat_![3 4;].unwrap();
+        let mut a: DataMatrix<i32> = mat_![1 2;];
+        let mut b: DataMatrix<i32> = mat_![3 4;];
         
         let m = concated_mat_![(&mut a); (&mut b);].unwrap().transposed();
 
-        assert_eq!(m.clone_data(), mat_![1 3; 2 4;].unwrap());
+        assert_eq!(m.clone_data(), mat_![1 3; 2 4;]);
     }
 }
 

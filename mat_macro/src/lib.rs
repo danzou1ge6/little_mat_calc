@@ -55,12 +55,14 @@ pub fn mat_(items: TokenStream) -> TokenStream {
     let (vec_items, rows, cols) = transform_item(items);
 
     let ret = quote!(
-        crate::DataMatrix::new(
-            vec![
-                #vec_items
-            ],
-            #rows, #cols
-        )
+        unsafe {
+            crate::DataMatrix::new_unchecked(
+                vec![
+                    #vec_items
+                ],
+                #rows, #cols
+            )
+        }
     ).into();
 
     ret
@@ -96,14 +98,14 @@ pub fn mat(items: TokenStream) -> TokenStream {
 
     let (vec_items, rows, cols) = transform_item(items);
 
-    let ret = quote!(
-        mat::DataMatrix::new(
+    let ret = quote!(unsafe {
+        mat::DataMatrix::new_unchecked(
             vec![
                 #vec_items
             ],
             #rows, #cols
         )
-    ).into();
+    }).into();
 
     ret
 }
