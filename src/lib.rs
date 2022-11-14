@@ -22,3 +22,4 @@ pub use matrix::{ConcatedMatrix, DataMatrix, SliceMatrix, EliminatedMatrix, Mat}
 pub use matrix::{SolveResult, solve, solve_augmented};
 pub use matrix::alg;
 pub use rational::Rational;
+pub use matrix::MatBlock;

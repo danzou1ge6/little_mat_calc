@@ -9,7 +9,7 @@ mod slice_matrix;
 mod eliminated_matrix;
 mod display;
 mod linear_equation;
-mod as_linear_elem;
+mod mat_block;
 pub mod alg;
 
 #[cfg(test)]
@@ -21,6 +21,7 @@ pub use slice_matrix::SliceMatrix;
 pub use eliminated_matrix::EliminatedMatrix;
 pub use linear_equation::{SolveResult, solve, solve_augmented};
 pub use display::{mat_print_buf, mat_to_string};
+pub use mat_block::MatBlock;
 use element::*;
 
 
