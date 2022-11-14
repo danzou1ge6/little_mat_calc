@@ -3,7 +3,7 @@ extern crate mat_macro;
 use mat_macro::mat_;
 
 #[test]
-fn test_crate() {
+fn test_create() {
     let m: DataMatrix<i32> = mat_![1 2; 3 4;];
     assert_eq!(*m.get(0, 0).unwrap(), 1);
     assert_eq!(*m.get(0, 1).unwrap(), 2);
@@ -55,6 +55,13 @@ fn test_scale() {
 }
 
 #[test]
+fn test_swap() {
+    let a: DataMatrix<i32> = mat_![1 2; 3 4;];
+    a.row(0).unwrap().swap(&mut a.row(1).unwrap()).unwrap();
+    assert_eq!(a, mat_![3 4; 1 2;]);
+}
+
+#[test]
 fn test_dot() {
     let a: DataMatrix<i32> = mat_![1 0; 0 1;];
     let b = mat_![1 2; 3 4;];
@@ -73,12 +80,13 @@ fn test_transpose() {
 #[test]
 fn test_inv() {
     use crate::Rational;
+    use crate::alg;
 
     let mut a: DataMatrix<Rational> = mat_![
         1 2;
         3 1;
     ].convert();
-    let inv = a.inv().unwrap();
+    let inv = alg::inv(&mut a).unwrap();
 
     assert_eq!(inv, mat_![
         (Rational(-1, 5)) (Rational(2, 5));

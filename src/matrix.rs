@@ -9,6 +9,8 @@ mod slice_matrix;
 mod eliminated_matrix;
 mod display;
 mod linear_equation;
+mod as_linear_elem;
+pub mod alg;
 
 #[cfg(test)]
 mod test;
@@ -112,9 +114,8 @@ pub trait Mat{
     /// 
     /// Dimension is not checked
     unsafe fn dot_unchecked(&self, rhs: &dyn Mat<Item=Self::Item>) -> DataMatrix<Self::Item>
-    where Self: Sized
     {
-        let mut result = Self::zeros(self.rows(), rhs.cols());
+        let mut result: DataMatrix<Self::Item> = DataMatrix::zeros(self.rows(), rhs.cols());
 
         for i in 0..self.rows() {
             for j in 0..rhs.cols() {
@@ -130,7 +131,6 @@ pub trait Mat{
     }
     /// Check the dimension then call `dot_unchecked`
     fn dot(&self, rhs: &dyn Mat<Item=Self::Item>) -> Result<DataMatrix<Self::Item>, MatError>
-    where Self: Sized 
     {
         if self.cols() != rhs.rows() {
             return Err(InconsistentDimension { need: (self.cols(), 0), got: rhs.dimensions() });
@@ -175,7 +175,7 @@ pub trait Mat{
     /// 
     /// `i` is not checked against `self.rows()`
     unsafe fn row_unchecked(&self, i: usize) -> SliceMatrix<Self::Item> where Self: Sized {
-        slice_matrix::SliceMatrix::new(
+        slice_matrix::SliceMatrix::new_unchecked(
             self, i, 1, 0, self.cols()
         )
     }
@@ -183,7 +183,7 @@ pub trait Mat{
     /// 
     /// `i` is not checked against `self.cols()`
     unsafe fn col_unchecked(&self, j: usize) -> SliceMatrix<Self::Item> where Self: Sized {
-        slice_matrix::SliceMatrix::new(
+        slice_matrix::SliceMatrix::new_unchecked(
             self, 0, self.rows(), j, 1
         )
     }
@@ -237,41 +237,6 @@ pub trait Mat{
         EliminatedMatrix::eliminated(self)
     }
 
-    /// Caculate the inverted matrix, if any, of `self`
-    /// 
-    /// If `self` is not square, of course there is a [`MatError::DimensionError`];
-    /// And if the matrix is not invertable, returns a [`MatError::NotInvertable`] containing the rank;
-    /// 
-    /// Caution: this method ruins the original matrix, turning it into an identity
-    fn inv(&mut self) -> Result<DataMatrix<Self::Item>, MatError> where Self: Sized {
-
-        use mat_macro::concated_mat_;
-
-        if self.rows() != self.cols() {
-            return Err(NotSquare { dim: self.dimensions() });
-        }
-
-        let mut result = DataMatrix::identity(self.rows());
-        let augmented = concated_mat_![
-            (self as &mut dyn Mat<Item=_>) (&mut result);
-        ].unwrap();
-
-        let mut augmented = EliminatedMatrix::eliminated(augmented);
-        augmented.reduce();
-
-        if augmented.pivot_cols.last().unwrap().unwrap() >= augmented.rows() {
-            let rank = augmented.pivot_cols
-                .iter()
-                .filter(
-                    |x|
-                    x.map_or(false, |x| x < augmented.rows())
-                )
-                .count();
-            return Err(NotInvertable{rank, rows: augmented.rows()});
-        }
-
-        Ok(result)
-    }
 
 }
 

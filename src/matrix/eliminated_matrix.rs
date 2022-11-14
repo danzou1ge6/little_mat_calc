@@ -161,11 +161,11 @@ impl<T, M> EliminatedMatrix<T, M> where M: Mat<Item=T>, T: LinearElem {
 
                 for pivot in pivot_vars.iter().rev() {
                     
-                    let sol_slice = SliceMatrix::new(
+                    let sol_slice = SliceMatrix::new_unchecked(
                         &sol, pivot + 1, self.cols() - pivot,
                         0, 1
                     );
-                    let coef_slice = SliceMatrix::new(
+                    let coef_slice = SliceMatrix::new_unchecked(
                         self, self.pivot_rows.get_unchecked(*pivot).unwrap(),
                         1, pivot + 1, self.cols() - pivot
                     );
@@ -196,11 +196,11 @@ impl<T, M> EliminatedMatrix<T, M> where M: Mat<Item=T>, T: LinearElem {
                         if !b.get_unchecked(i, 0).is_add_zero() { return None; }
                     },
                     Some(pivot) => {
-                        let sol_slice = SliceMatrix::new(
+                        let sol_slice = SliceMatrix::new_unchecked(
                             &sol, pivot + 1, self.cols() - pivot,
                             0, 1
                         );
-                        let coef_slice = SliceMatrix::new(
+                        let coef_slice = SliceMatrix::new_unchecked(
                             self, i, 1, pivot + 1,
                             self.cols() - pivot
                         );
@@ -227,7 +227,7 @@ impl<T, M> EliminatedMatrix<T, M> where M: Mat<Item=T>, T: LinearElem {
     ) -> EliminatedMatrix<T, SliceMatrix<T>> {
         let slice_mat = SliceMatrix::new(
             self, row_begin, rows, col_begin, cols
-        );
+        ).unwrap();
         let pivot_cols = self.pivot_cols[row_begin..row_begin + rows]
             .iter()
             .map(|&x| 

@@ -2,6 +2,8 @@ use std::marker::PhantomData;
 
 use super::Mat;
 use crate::element::LinearElem;
+use crate::error::MatError;
+use MatError::*;
 
 
 /// A matrix that is a slice of another trait object of [`Mat`]
@@ -21,13 +23,22 @@ impl<'a, T> SliceMatrix<'a, T> where T: LinearElem {
     /// Caution: though `original` is behind a inmutable reference, it'll be converted to a 
     /// `*mut` raw pointer, therefore it's actually mutable.
     /// This is done to allow `original` to be splitted into multiple slices
-    pub fn new(
+    pub unsafe fn new_unchecked(
         origin: &'a dyn Mat<Item=T>, row_begin: usize, rows: usize, col_begin: usize, cols: usize
     ) -> Self {
         let origin = origin as *const dyn Mat<Item=T> as *mut dyn Mat<Item=T>;
         SliceMatrix { origin, row_begin, col_begin, rows, cols, is_transposed: false, _phantom: PhantomData }
     }
 
+
+    pub fn new(
+        origin: &'a dyn Mat<Item=T>, row_begin: usize, rows: usize, col_begin: usize, cols: usize
+    ) -> Result<Self, MatError> {
+        if row_begin + rows > origin.rows() || col_begin + cols > origin.cols() {
+            return Err(IndexError { dim: origin.dimensions(), i: row_begin + rows, j: col_begin + cols, mutable: true });
+        }
+        unsafe { Ok(SliceMatrix::new_unchecked(origin, row_begin, rows, col_begin, cols)) }
+    }
 
 }
 
