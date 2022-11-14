@@ -107,6 +107,27 @@ fn example_blocked_mat() {
     println!("Blocks after op:\n{}", m);
 }
 
+fn example_det() {
+    let a: DataMatrix<Rational> = mat![
+        1 2 3;
+        4 1 2;
+        2 3 3;
+    ].convert();
+
+    println!("Det of \n{}is {}", a, alg::det(&a).unwrap());
+}
+
+fn example_det_poly() {
+    let mut a: DataMatrix<Polynomial<i32>> = mat![
+        1 2 3;
+        4 1 2;
+        2 3 3;
+    ].convert();
+    a.sub_assign(DataMatrix::identity(3).scale(&polyminal!(0, 1)));
+
+    println!("Det polyminal is {}", alg::det(&a).unwrap());
+}
+
 
 fn main() {
     example_concat();
@@ -115,6 +136,8 @@ fn main() {
     example_solve();
     example_swap();
     example_blocked_mat();
+    example_det();
+    example_det_poly();
 }
 
 

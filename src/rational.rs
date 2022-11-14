@@ -17,6 +17,14 @@ fn gcd(m: i32, n: i32) -> i32 {
     else { gcd(n, m % n) }
 }
 
+#[macro_export]
+/// Create a [`Rational`] by calling its `new` method
+macro_rules! rational {
+    ($p:expr, $q:expr) => {
+        $crate::Rational::new($p, $q)
+    };
+}
+
 impl Rational {
     /// Create a new Rational
     /// 
@@ -189,45 +197,43 @@ impl LinearElem for Rational {}
 
 #[cfg(test)]
 mod test {
-    use super::*;
     
-    const R: &'static dyn Fn(i32, i32) -> Rational = &Rational::new;
 
     #[test]
     fn test_new() {
-        let a = R(6, 12);
+        let a = rational!(6, 12);
         assert_eq!(a.0, 1);
         assert_eq!(a.1, 2);
     }
 
     #[test]
     fn test_add_pos() {
-        assert_eq!(R(2, 3) + R(5, 4), R(23, 12))
+        assert_eq!(rational!(2, 3) + rational!(5, 4), rational!(23, 12))
     }
     #[test]
     fn test_add_neg() {
-        assert_eq!(R(-2, 3) + R(5, 4), R(7, 12))
+        assert_eq!(rational!(-2, 3) + rational!(5, 4), rational!(7, 12))
     }
     #[test]
     fn test_mul() {
-        assert_eq!(R(2, 3) * R(9, 7), R(6, 7))
+        assert_eq!(rational!(2, 3) * rational!(9, 7), rational!(6, 7))
     }
     #[test]
     fn test_div() {
-        assert_eq!(R(2, 3) / R(7, 9), R(6, 7))
+        assert_eq!(rational!(2, 3) / rational!(7, 9), rational!(6, 7))
     }
     #[test]
     fn test_gt() {
-        assert_eq!(R(3, 2) > R(5, 4), true)
+        assert_eq!(rational!(3, 2) > rational!(5, 4), true)
     }
     #[test]
     fn test_lt() {
-        assert_eq!(R(3, 2) < R(5, 4), false)
+        assert_eq!(rational!(3, 2) < rational!(5, 4), false)
     }
     #[test]
     fn test_eq() {
-        assert_eq!(R(4, 9) == R(12, 27), true);
-        assert_eq!(R(1, 2) == R(1, 2), true);
+        assert_eq!(rational!(4, 9) == rational!(12, 27), true);
+        assert_eq!(rational!(1, 2) == rational!(1, 2), true);
     }
 }
 

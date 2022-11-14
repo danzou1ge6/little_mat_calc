@@ -1,6 +1,9 @@
 /// Implements a [`Rational`] in the form of fraction
 pub mod rational;
 
+/// Implements a [`Polynomial`]
+pub mod polynomial;
+
 /// Defines the trait that elements in a matrix must satisfy
 /// 
 /// In short, these elements must be *linear*
@@ -22,4 +25,5 @@ pub use matrix::{ConcatedMatrix, DataMatrix, SliceMatrix, EliminatedMatrix, Mat}
 pub use matrix::{SolveResult, solve, solve_augmented};
 pub use matrix::alg;
 pub use rational::Rational;
+pub use polynomial::Polynomial;
 pub use matrix::MatBlock;
