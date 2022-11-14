@@ -82,7 +82,7 @@ impl<T> RefSub for T where T: Copy + Sub<Output=T> {
 
 
 pub trait LinearElem: Sized + Clone + AddZero + MulZero + RefAdd<Output=Self> + RefAddAssign 
-    + RefMul<Output=Self> + RefMulAssign + RefSub<Output=Self> + RefSubAssign + RefInv
+    + RefMul<Output=Self> + RefMulAssign + RefSub<Output=Self> + RefSubAssign
     + std::fmt::Display + std::fmt::Debug {}
 
 /// Implements [`LinearElem`] for some primitives

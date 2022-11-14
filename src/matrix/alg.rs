@@ -1,6 +1,6 @@
 mod inv_mat {
     use super::super::{Mat, MatError, DataMatrix, EliminatedMatrix};
-    use crate::element::LinearElem;
+    use crate::element::{LinearElem, RefInv};
     use MatError::*;
 
     /// Caculate the inverted matrix, if any, of `mat`
@@ -9,7 +9,7 @@ mod inv_mat {
     /// And if the matrix is not invertable, returns a [`MatError::NotInvertable`] containing the rank;
     /// 
     /// Caution: this method ruins the original matrix, turning it into an identity
-    pub fn inv<T>(mat: &mut dyn Mat<Item=T>) -> Result<DataMatrix<T>, MatError> where T: LinearElem {
+    pub fn inv<T>(mat: &mut dyn Mat<Item=T>) -> Result<DataMatrix<T>, MatError> where T: LinearElem + RefInv {
 
         use mat_macro::concated_mat_;
 

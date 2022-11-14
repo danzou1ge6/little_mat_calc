@@ -237,7 +237,7 @@ pub trait Mat{
 
     /// Do the Gussian Elimination and get the [`EliminatedMatrix`] with pivot information
     /// for further use
-    fn eliminated(self) -> EliminatedMatrix<Self::Item, Self> where Self: Sized {
+    fn eliminated(self) -> EliminatedMatrix<Self::Item, Self> where Self: Sized, Self::Item: RefInv {
         EliminatedMatrix::eliminated(self)
     }
 

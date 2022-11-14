@@ -5,7 +5,8 @@ use crate::element::*;
 
 
 /// Implementation of Gussian Elimination
-pub unsafe fn elimination<M: Mat>(mat: &mut M) -> [Vec<Option<usize>>; 2] {
+pub unsafe fn elimination<T, M: Mat<Item=T>>(mat: &mut M) -> [Vec<Option<usize>>; 2] 
+where T: LinearElem + RefInv {
 
     let mut pivot_col = 0;
     let mut pivot_row = 0;
@@ -55,7 +56,7 @@ pub unsafe fn elimination<M: Mat>(mat: &mut M) -> [Vec<Option<usize>>; 2] {
 
 
 /// An eliminated matrix holidng information of where pivots are
-pub struct EliminatedMatrix<T, M> where M: Mat<Item=T>, T: LinearElem{
+pub struct EliminatedMatrix<T, M> where M: Mat<Item=T>, T: LinearElem + RefInv {
     /// The data
     pub mat: M,
     /// `pivot_cols[row] = Some(col)` where (row, col) is a pivot;
@@ -65,7 +66,7 @@ pub struct EliminatedMatrix<T, M> where M: Mat<Item=T>, T: LinearElem{
     pub pivot_rows: Vec<Option<usize>>
 }
 
-impl<T, M> EliminatedMatrix<T, M> where M: Mat<Item=T>, T: LinearElem {
+impl<T, M> EliminatedMatrix<T, M> where M: Mat<Item=T>, T: LinearElem + RefInv {
     /// Eliminate a matrix and stores it in a [`EliminatedMatrix`]
     pub fn eliminated(mut mat: M) -> Self {
         let [pivot_rows, pivot_cols] = unsafe { 
@@ -251,7 +252,7 @@ impl<T, M> EliminatedMatrix<T, M> where M: Mat<Item=T>, T: LinearElem {
 }
 
 
-impl<T, M> Mat for EliminatedMatrix<T, M> where M: Mat<Item=T>, T: LinearElem {
+impl<T, M> Mat for EliminatedMatrix<T, M> where M: Mat<Item=T>, T: LinearElem + RefInv {
     type Item = T;
 
     fn is_transposed(&self) -> bool { self.mat.is_transposed() }
@@ -274,11 +275,11 @@ mod display {
     use super::*;
     use super::super::mat_print_buf;
 
-    impl<T, M> Display for EliminatedMatrix<T, M> where M: Mat<Item=T>, T: LinearElem + Display {
+    impl<T, M> Display for EliminatedMatrix<T, M> where M: Mat<Item=T>, T: LinearElem + Display + RefInv {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { mat_print_buf(self, f) }
     }
 
-    impl<T, M> Debug for EliminatedMatrix<T, M> where M: Mat<Item=T>, T: LinearElem + Display {
+    impl<T, M> Debug for EliminatedMatrix<T, M> where M: Mat<Item=T>, T: LinearElem + Display + RefInv {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { mat_print_buf(self, f) }
     }
 }

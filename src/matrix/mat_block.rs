@@ -105,7 +105,7 @@ impl<'a, T> RefMul for MatBlock<'a, T> where T:  LinearElem + 'a {
     }
 }
 
-impl<'a, T> RefInv for MatBlock<'a, T> where T:  LinearElem + 'a {
+impl<'a, T> RefInv for MatBlock<'a, T> where T:  LinearElem + 'a + RefInv {
     fn inv(&self) -> Self {
         use crate::alg::inv;
         MatBlock(Box::new(inv(&mut self.0.clone_data()).unwrap()))
