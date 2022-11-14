@@ -13,6 +13,8 @@ fn transform_item(items: TokenStream) -> (proc_macro2::TokenStream, usize, usize
     let mut cols: usize = 0;
     let mut last_cols = 0;
 
+    let mut cnt = 0;
+
     let mut v = Vec::new();
 
     for token in items {
@@ -29,17 +31,22 @@ fn transform_item(items: TokenStream) -> (proc_macro2::TokenStream, usize, usize
                     v.push(TokenTree::Punct(Punct::new('-', Spacing::Joint)));
                 } else if punct.as_char() == '+' {
                 } else {
-                    panic!("Use `TokenTree::Punct` of ',' or ';' to seperate rows")
+                    panic!("Use `TokenTree::Punct` of ',' or ';' to seperate rows and brackets to group expressions; other `Punct` are not accepted")
                 }
             },
             _ => {
                 v.push(token);
                 v.push(TokenTree::Punct(Punct::new(',', Spacing::Alone)));
                 cols += 1;
+                cnt += 1;
             },
         }
     }
     cols = last_cols;
+
+    if cols * rows != cnt {
+        panic!("rows*cols={}*{} is inconsistent with element number({}); Did you forgot a `;`?", rows, cols, cnt);
+    }
 
     let mut vec_items = TokenStream::new();
     vec_items.extend(v.into_iter());
