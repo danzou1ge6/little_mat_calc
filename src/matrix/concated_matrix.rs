@@ -105,14 +105,15 @@ impl<'a, T> Mat for ConcatedMatrix<'a, T> where T: LinearElem{
 mod display {
     use std::fmt::{Debug, Display};
     use super::*;
-    use super::super::display::MatPrint;
+    use super::super::mat_print_buf;
+    
 
     impl<T> Display for ConcatedMatrix<'_, T> where T: LinearElem + Display {
-        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { self.mat_print_fmt(f) }
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { mat_print_buf(self, f) }
     }
 
     impl<T> Debug for ConcatedMatrix<'_, T> where T: LinearElem + Display {
-        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { self.mat_print_fmt(f) }
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { mat_print_buf(self, f) }
     }
 }
 

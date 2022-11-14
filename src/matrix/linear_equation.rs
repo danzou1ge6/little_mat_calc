@@ -20,22 +20,21 @@ pub enum SolveResult<T> where T: LinearElem {
 }
 
 mod display {
-    use super::super::display::MatPrint;
-
     use super::*;
+    use super::super::mat_print_buf;
     use std::fmt::Display;
 
     impl<T> Display for SolveResult<T> where T: LinearElem + Display {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             match self {
                 SolveResult::None => write!(f, "None"),
-                SolveResult::Single(sol) => sol.mat_print_fmt(f),
+                SolveResult::Single(sol) => mat_print_buf(sol, f),
                 SolveResult::Infinite { general, special }
                 => {
                     write!(f, "Special:\n")?;
-                    special.mat_print_fmt(f)?;
+                    mat_print_buf(special, f)?;
                     write!(f, "General:\n")?;
-                    general.mat_print_fmt(f)
+                    mat_print_buf(general, f)
                 }
             }
         }

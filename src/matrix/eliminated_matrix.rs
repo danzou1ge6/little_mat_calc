@@ -272,14 +272,14 @@ impl<T, M> Mat for EliminatedMatrix<T, M> where M: Mat<Item=T>, T: LinearElem {
 mod display {
     use std::fmt::{Debug, Display};
     use super::*;
-    use super::super::display::MatPrint;
+    use super::super::mat_print_buf;
 
     impl<T, M> Display for EliminatedMatrix<T, M> where M: Mat<Item=T>, T: LinearElem + Display {
-        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { self.mat_print_fmt(f) }
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { mat_print_buf(self, f) }
     }
 
     impl<T, M> Debug for EliminatedMatrix<T, M> where M: Mat<Item=T>, T: LinearElem + Display {
-        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { self.mat_print_fmt(f) }
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { mat_print_buf(self, f) }
     }
 }
 
