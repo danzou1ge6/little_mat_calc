@@ -20,6 +20,7 @@ pub use concated_matrix::ConcatedMatrix;
 pub use slice_matrix::SliceMatrix;
 pub use eliminated_matrix::EliminatedMatrix;
 pub use linear_equation::{SolveResult, solve, solve_augmented};
+pub use display::{mat_print_buf, mat_to_string};
 use element::*;
 
 
@@ -57,6 +58,8 @@ pub trait Mat{
 
     /// Returns `(rows(), cols())`
     fn dimensions(&self) -> (usize, usize) { (self.rows(), self.cols()) }
+    /// Returns if is square matrix
+    fn is_square(&self) -> bool { self.rows() == self.cols() }
 
     /// Indicates if the matrix is transposed
     /// 

@@ -77,20 +77,4 @@ fn test_transpose() {
     assert_eq!(a, mat_![1 4; 2 5; 3 6;]);
 }
 
-#[test]
-fn test_inv() {
-    use crate::Rational;
-    use crate::alg;
-
-    let mut a: DataMatrix<Rational> = mat_![
-        1 2;
-        3 1;
-    ].convert();
-    let inv = alg::inv(&mut a).unwrap();
-
-    assert_eq!(inv, mat_![
-        (Rational(-1, 5)) (Rational(2, 5));
-        (Rational(3, 5)) (Rational(-1, 5));
-    ]);
-}
 

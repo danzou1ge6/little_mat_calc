@@ -15,6 +15,8 @@ pub enum MatError {
     NotSquare { dim: (usize, usize) },
     /// Can't concat
     ConcatFailure(String),
+    /// Empty
+    EmptyMatrix,
 }
 
 impl Display for MatError {
@@ -32,7 +34,8 @@ impl Display for MatError {
                 => write!(f, "To init a ({},{}) matrix need a {} vec, not {}", rows, cols, rows * cols, len),
             NotSquare {dim}
                 => write!(f, "Need a square matrix, got {:?}", dim),
-            ConcatFailure(s) => write!(f, "{s}")
+            ConcatFailure(s) => write!(f, "{s}"),
+            EmptyMatrix => write!(f, "Empty matrix")
         }
     }
 }
