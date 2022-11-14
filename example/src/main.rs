@@ -123,7 +123,7 @@ fn example_det_poly() {
         4 1 2;
         2 3 3;
     ].convert();
-    a.sub_assign(DataMatrix::identity(3).scale(&polyminal!(0, 1)));
+    a.sub_assign(DataMatrix::identity(3).scale(&polynomial!(0, 1)));
 
     println!("Det polyminal is {}", alg::det(&a).unwrap());
 }
