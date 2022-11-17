@@ -68,4 +68,5 @@ pub use inv_mat::inv;
 mod det_mat;
 pub use det_mat::det;
 
-
+mod linear_equation;
+pub use linear_equation::{solve, solve_augmented, SolveResult};

@@ -8,7 +8,6 @@ mod concated_matrix;
 mod slice_matrix;
 mod eliminated_matrix;
 mod display;
-mod linear_equation;
 mod mat_block;
 pub mod alg;
 
@@ -19,7 +18,6 @@ pub use data_matrix::DataMatrix;
 pub use concated_matrix::ConcatedMatrix;
 pub use slice_matrix::SliceMatrix;
 pub use eliminated_matrix::EliminatedMatrix;
-pub use linear_equation::{SolveResult, solve, solve_augmented};
 pub use display::{mat_print_buf, mat_to_string};
 pub use mat_block::MatBlock;
 use element::*;

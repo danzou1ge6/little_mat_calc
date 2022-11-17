@@ -24,7 +24,7 @@ fn example_solve() {
         2;
     ].convert();
 
-    println!("Solution:\n{}", solve(&mut a, &mut b).unwrap());
+    println!("Solution:\n{}", alg::solve(&mut a, &mut b).unwrap());
 }
 
 fn example_concat() {

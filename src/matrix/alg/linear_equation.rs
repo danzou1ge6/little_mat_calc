@@ -1,4 +1,4 @@
-use super::{DataMatrix, Mat};
+use crate::matrix::{DataMatrix, Mat};
 use crate::error::MatError;
 use MatError::*;
 use mat_macro::concated_mat_;
@@ -21,7 +21,7 @@ pub enum SolveResult<T> where T: LinearElem {
 
 mod display {
     use super::*;
-    use super::super::mat_print_buf;
+    use crate::matrix::mat_print_buf;
     use std::fmt::Display;
 
     impl<T> Display for SolveResult<T> where T: LinearElem + Display {
