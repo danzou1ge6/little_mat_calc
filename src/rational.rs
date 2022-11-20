@@ -247,6 +247,9 @@ impl TryInto<Rational> for &str {
                 return Ok(Rational::new(p, q));
             }
         }
+        if let Ok(int) = self.parse::<i32>() {
+            return Ok(Rational::from(int));
+        }
         return Err(());
     }
 }
