@@ -156,6 +156,12 @@ pub trait Mat{
     fn add_assign(&mut self, rhs: &dyn Mat<Item=Self::Item>) {
         unsafe { self.add_assign_unchecked(rhs) }
     }
+    /// Instead of assining the result to the original matrix, first clone a new one then add_assign it
+    fn add(&self, rhs: &dyn Mat<Item=Self::Item>) -> DataMatrix<Self::Item> {
+        let mut r= self.clone_data();
+        r.add_assign(rhs);
+        r
+    }
 
     /// Same as `add_assign_unchecked`
     unsafe fn sub_assign_unchecked(&mut self, rhs: &dyn Mat<Item=Self::Item>) {
@@ -169,6 +175,12 @@ pub trait Mat{
     /// Same as `add_assign`
     fn sub_assign(&mut self, rhs: &dyn Mat<Item=Self::Item>) {
         unsafe { self.sub_assign_unchecked(rhs) }
+    }
+    /// Instead of assining the result to the original matrix, first clone a new one then sub_assign it
+    fn sub(&self, rhs: &dyn Mat<Item=Self::Item>) -> DataMatrix<Self::Item> {
+        let mut r= self.clone_data();
+        r.sub_assign(rhs);
+        r
     }
 
     /// Returns a [`SliceMatrix`] refering to the `i`th row of `self`
