@@ -63,14 +63,14 @@ impl Interpreter {
         match self.parser.parse(pieces) {
             PendingResult::Pending => return PendingResult::Pending,
             PendingResult::Ok(tokens) => {
-                
+                self.parser.clear();
                 match self.env.eval(tokens) {
                     Ok(obj) => return PendingResult::Ok(obj),
                     Err(err) => return PendingResult::Err(err.into()),
                 }
             },
             PendingResult::Err(err) => {
-
+                self.parser.clear();
                 return PendingResult::Err(err.into());
             },
         }

@@ -307,6 +307,10 @@ mod parsing {
                 return Pending;
             }
         }
+
+        pub fn clear(&mut self) {
+            std::mem::swap(self, &mut Self::new());
+        }
     }
 
     #[cfg(test)]

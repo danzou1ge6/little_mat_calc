@@ -71,6 +71,20 @@ pub struct ObjectPair {
     pub second: ObjectPairItem,
 }
 
+impl ObjectPairItem {
+    pub fn make_list(mut v: Vec<ObjectPairItem>) -> Self {
+        if v.len() == 1 {
+            return ObjectPairItem::List(
+                Rc::new(ObjectPair { first: v.pop().unwrap(), second: ObjectPairItem::Lit(Literal::Nil) })
+            );
+        }
+        let item = v.pop().unwrap();
+        return ObjectPairItem::List(
+            Rc::new(ObjectPair { first: item, second: ObjectPairItem::make_list(v) })
+        );
+    }
+}
+
 mod display {
     use super::*;
     use std::fmt::Display;
