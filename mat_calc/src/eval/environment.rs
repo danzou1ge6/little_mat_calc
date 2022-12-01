@@ -209,7 +209,7 @@ impl Environment {
         use Token::*;
 
         match args {
-            Tok(_) => return Err(EvalError::syntax("Missing arguments for `define`".to_string())),
+            Tok(_) => return Err(EvalError::syntax("Missing arguments for `def`".to_string())),
             Pir(pair) => {
                 let sig = pair.first;
                 let body = pair.second;
@@ -302,7 +302,7 @@ impl Environment {
             Pir(pair) => {
                 if let Tok(Word(word)) = &pair.first {
                     match &word[..] {
-                        "define" => {
+                        "def" => {
                             self.define(pair.second)?;
                             return Ok(Lit(Literal::Nil));
                         },

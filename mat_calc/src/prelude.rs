@@ -35,7 +35,7 @@ pub fn inject_builtins(frame: &mut Frame) {
 pub const PRELUDE_SRC: &'static str = indoc! {"
 (
 # Get the last item of a list
-(define (last x)
+(def (last x)
     (if (= nil (cdr x))
         (car x)
         (last (cdr x))
@@ -43,7 +43,7 @@ pub const PRELUDE_SRC: &'static str = indoc! {"
 )
 
 # abs
-(define (abs x)
+(def (abs x)
     (if (< x 0)
         (- 0 x)
         x
