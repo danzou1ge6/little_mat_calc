@@ -14,7 +14,7 @@ where T: LinearElem + RefInv {
     let mut pivot_cols: Vec<Option<usize>> = (0..mat.rows()).into_iter().map(|_| None).collect();
     let mut pivot_rows: Vec<Option<usize>> = (0..mat.cols()).into_iter().map(|_| None).collect();
 
-    while pivot_col < mat.cols() - 1 && pivot_row < mat.rows() {
+    while pivot_col < mat.cols() && pivot_row < mat.rows() {
 
         // look for the first non_zero element in `pivot_col` and swap it to the first row
         let mut found_non_zero = false;
@@ -367,6 +367,13 @@ mod test {
     fn test_rank() {
         let b = eliminate();
         assert_eq!(b.rank(), 2);
+    }
+
+    #[test]
+    fn test_rank2() {
+        let m = mat_![1 2; 3 4;];
+        let m = m.eliminated();
+        assert_eq!(m.rank(), 2)
     }
 
     #[test]
