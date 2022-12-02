@@ -1,5 +1,5 @@
 use super::{environment::Environment, error::EvalError};
-use crate::mat_wrap::MatrixWrap;
+use crate::{mat_wrap::MatrixWrap, table::Table};
 use mat::Rational;
 use std::rc::Rc;
 
@@ -11,6 +11,8 @@ pub enum Literal {
     Float(f64),
     /// Matrix
     Matrix(MatrixWrap),
+    ///
+    Table(Box<Table<ObjectPairItem>>),
     /// `nil`
     Nil,
     Bool(bool),
@@ -25,14 +27,14 @@ impl TryInto<Literal> for Token {
     fn try_into(self) -> Result<Literal, ()> {
         use Token::*;
 
-        Ok(match self {
-            Float(fl) => Literal::Float(fl),
-            Nil => Literal::Nil,
-            Rat(r) => Literal::Rat(r),
-            Word(_) => return Err(()),
-            Matrix(m) => Literal::Matrix(m),
-            Bool(b) => Literal::Bool(b),
-        })
+        match self {
+            Float(fl) => Ok(Literal::Float(fl)),
+            Nil => Ok(Literal::Nil),
+            Rat(r) => Ok(Literal::Rat(r)),
+            Matrix(m) => Ok(Literal::Matrix(m)),
+            Bool(b) => Ok(Literal::Bool(b)),
+            _ => Err(()),
+        }
     }
 }
 
@@ -98,6 +100,7 @@ mod display {
                 Float(fl) => fl.fmt(f),
                 Nil => write!(f, "nil"),
                 Matrix(m) => write!(f, "\n{m}"),
+                Table(t) => write!(f, "{t}"),
                 Bool(b) => {
                     if *b {
                         write!(f, "#t")

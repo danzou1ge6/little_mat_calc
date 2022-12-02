@@ -3,6 +3,7 @@ use mat::alg;
 use mat::alg::SolveResult;
 use mat::element::RefInv;
 use mat::DataMatrix;
+use mat::ConcatedMatrix;
 use mat::Mat;
 use std::rc::Rc;
 
@@ -16,11 +17,6 @@ use crate::mat_wrap::MatrixWrap;
 
 pub fn inv(args: ObjectPairItem, _: &mut Environment) -> Output {
     match args {
-        List(_) => {
-            return Err(EvalError::syntax(
-                "You can only inv one item a time".to_string(),
-            ))
-        }
         Lit(Matrix(MatrixWrap::Flt(m))) => match alg::inv(&mut m.clone_data()) {
             Ok(r) => return Ok(Lit(Matrix(MatrixWrap::Flt(Box::new(r))))),
             Err(e) => return Err(EvalError::value(format!("{e}"))),
@@ -37,11 +33,6 @@ pub fn inv(args: ObjectPairItem, _: &mut Environment) -> Output {
 
 pub fn eliminate(args: ObjectPairItem, _: &mut Environment) -> Output {
     match args {
-        List(_) => {
-            return Err(EvalError::syntax(
-                "You can only gussain eliminate one item a time".to_string(),
-            ))
-        }
         Lit(Matrix(MatrixWrap::Flt(m))) => {
             let r = m.clone_data().eliminated();
             return Ok(Lit(Matrix(MatrixWrap::Flt(Box::new(r)))));
@@ -75,11 +66,6 @@ pub fn reduce(args: ObjectPairItem, _: &mut Environment) -> Output {
 
 pub fn rank(args: ObjectPairItem, _: &mut Environment) -> Output {
     match args {
-        List(_) => {
-            return Err(EvalError::syntax(
-                "You can only calculate rank one item a time".to_string(),
-            ))
-        }
         Lit(Matrix(MatrixWrap::Flt(m))) => {
             let r = m.clone_data().eliminated().rank() as i32;
             return Ok(Lit(Rat(r.into())));
@@ -98,11 +84,6 @@ pub fn rank(args: ObjectPairItem, _: &mut Environment) -> Output {
 
 pub fn det(args: ObjectPairItem, _: &mut Environment) -> Output {
     match args {
-        List(_) => {
-            return Err(EvalError::syntax(
-                "You can only calculate determinant one item a time".to_string(),
-            ))
-        }
         Lit(Matrix(MatrixWrap::Flt(m))) => {
             let d = match alg::det(m.as_ref()) {
                 Ok(d) => d,
@@ -172,11 +153,6 @@ pub fn solve(args: ObjectPairItem, _: &mut Environment) -> Output {
 
 pub fn transposed(args: ObjectPairItem, _: &mut Environment) -> Output {
     match args {
-        List(_) => {
-            return Err(EvalError::syntax(
-                "You can only transpose one matrix a time".to_string(),
-            ))
-        }
         Lit(Matrix(MatrixWrap::Flt(m))) => {
             return Ok(Lit(Matrix(MatrixWrap::Flt(Box::new(
                 m.clone_data().transposed(),
@@ -193,11 +169,6 @@ pub fn transposed(args: ObjectPairItem, _: &mut Environment) -> Output {
 
 pub fn trace(args: ObjectPairItem, _: &mut Environment) -> Output {
     match args {
-        List(_) => {
-            return Err(EvalError::syntax(
-                "You can only calculate trace one matrix a time".to_string(),
-            ))
-        }
         Lit(Matrix(MatrixWrap::Flt(m))) => {
             return Ok(Lit(Float(
                 alg::trace(m.as_ref()).map_err(|e| EvalError::value(format!("{e}")))?,
@@ -218,11 +189,6 @@ pub fn trace(args: ObjectPairItem, _: &mut Environment) -> Output {
 
 pub fn null_space(args: ObjectPairItem, _: &mut Environment) -> Output {
     match args {
-        List(_) => {
-            return Err(EvalError::syntax(
-                "You can only calculate null space one matrix a time".to_string(),
-            ))
-        }
         Lit(Matrix(MatrixWrap::Flt(m))) => {
             if let Some(ns) = m.clone_data().eliminated().null_space() {
                 return Ok(Lit(Matrix(MatrixWrap::Flt(Box::new(ns)))));
@@ -247,7 +213,6 @@ pub fn null_space(args: ObjectPairItem, _: &mut Environment) -> Output {
 
 pub fn ridentity(args: ObjectPairItem, _: &mut Environment) -> Output {
     match args {
-        List(_) => return Err(EvalError::syntax("Takes one argument".to_string())),
         Lit(Rat(r)) => {
             if r.1 != 1 || r.0 < 0 {
                 return Err(EvalError::value(
@@ -262,6 +227,38 @@ pub fn ridentity(args: ObjectPairItem, _: &mut Environment) -> Output {
         _ => return Err(EvalError::typ(format!("Can only transpose a matrix"))),
     }
 }
+
+pub fn concat(args: ObjectPairItem, _: &mut Environment) -> Output {
+    match args {
+        Lit(Table(t)) => {
+            if t.data.len() == 0 {
+                return Err(EvalError::value(format!("Empty matrix not allowed")));
+            }
+
+            match t.data[0] {
+                Lit(Matrix(MatrixWrap::Flt(_))) => {
+                    let mut mt_data = Vec::with_capacity(t.data.len());
+                    for o in t.data.into_iter() {
+                        match o {
+                            Lit(MatrixWrap::Flt(m)) => mt_data.push(m),
+                            _ => return Err(EvalError::typ(format!("Can only concat matrix with same type of matrix (rational or float)")))
+                        }
+                    }
+                    let concated = ConcatedMatrix::new(
+                        
+                    )
+                },
+                Lit(Matrix(MatrixWrap::Rat(_))) => {
+
+                },
+                _ => return Err(EvalError::typ(format!("Can only concat matrixes")))
+            }
+            
+        },
+        _ => return Err(EvalError::typ(format!("Can only concat a table of matrixes")))
+    }
+}
+
 
 pub const EXPORTS: [ExportType; 10  ] = [
     ("inv", 1, &inv),

@@ -1,6 +1,7 @@
 use super::frame::*;
 use super::object::*;
 use super::error::*;
+use crate::table;
 use crate::token_pair::Token;
 use crate::token_pair::{TokenPairItem, TokenPair};
 use super::config::Config;
@@ -293,6 +294,17 @@ impl Environment {
                             Err(EvalError::name(format!("Name `{}` not found", word))), 
                             |x| Ok(x),
                         );
+                    },
+                    Table(t) => {
+                        let mut ot_data = Vec::with_capacity(t.data.len());
+                        for name in t.data.into_iter() {
+                            ot_data.push(self.find_object(&name).map_or(Err(EvalError::name(format!("Name `{}` not found", name)), 
+                                ), |x| Ok(x))?);
+                        }
+                        return Ok(Lit(Literal::Table(Box::new(
+                            table::Table { data: ot_data, rows: t.rows, cols: t.cols }
+                        ))));
+
                     },
                     other => {
                         return Ok(Lit(other.try_into().unwrap()));

@@ -1,10 +1,13 @@
 {
 	"folders": [
 		{
-			"path": ".."
+			"path": "../mat_macro"
 		},
 		{
 			"path": "."
+		},
+		{
+			"path": ".."
 		}
 	],
 	"settings": {}

@@ -1,5 +1,5 @@
 pub mod token {
-    use crate::mat_wrap::MatrixWrap;
+    use crate::{mat_wrap::MatrixWrap, table::Table};
     use mat::Rational;
     use std::fmt;
 
@@ -15,6 +15,8 @@ pub mod token {
         Float(f64),
         /// Matrix
         Matrix(MatrixWrap),
+        /// Table,
+        Table(Table<String>),
         Bool(bool),
         /// `nil`
         Nil,
@@ -28,6 +30,7 @@ pub mod token {
                 Word(w) => write!(f, "{}", w),
                 Float(fl) => write!(f, "{}", fl),
                 Matrix(m) => write!(f, "{m}"),
+                Table(t) => write!(f, "{t}"),
                 Nil => write!(f, "nil"),
                 Bool(b) => {
                     if *b {
@@ -137,7 +140,7 @@ mod pair {
 
 mod parsing {
 
-    use crate::mat_wrap::MatrixWrap;
+    use crate::mat_wrap::{MatrixOrTable};
 
     use super::pair::*;
     /// Parsing splitted *Pieces* into [`Pair`]
@@ -266,7 +269,7 @@ mod parsing {
                     }
                     "]" => {
                         self.in_mat = false;
-                        let matrix_wrap: MatrixWrap =
+                        let matrix_table: MatrixOrTable =
                             match (&mut self.mat_buf.iter().map(|x| &x[..])
                                 as &mut dyn Iterator<Item = &str>)
                                 .try_into()
@@ -276,8 +279,14 @@ mod parsing {
                                 Result::Ok(mr) => mr,
                                 Result::Err(e) => return PendingResult::Err(e),
                             };
-                        self.stack
-                            .push(TokenPairItem::Tok(Token::Matrix(matrix_wrap)));
+                        match matrix_table {
+                            MatrixOrTable::Matrix(m) =>
+                                self.stack
+                                    .push(TokenPairItem::Tok(Token::Matrix(m))),
+                            MatrixOrTable::Table(t) => 
+                                self.stack
+                                    .push(TokenPairItem::Tok(Token::Table(t))),
+                        }
                         if let Err(e) = increase_last_cnt(&mut self.cnt_stack) {
                             return Err(e);
                         }
