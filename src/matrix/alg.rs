@@ -68,5 +68,26 @@ pub use inv_mat::inv;
 mod det_mat;
 pub use det_mat::det;
 
+mod trace {
+    use crate::Mat;
+    use crate::element::LinearElem;
+    use crate::error::MatError;
+
+    pub fn trace<T>(mat: &dyn Mat<Item=T>) -> Result<T, MatError> where T: LinearElem {
+        if mat.rows() != mat.cols() {
+            return Err(MatError::NotSquare { dim: mat.dimensions() });
+        } else {
+            let mut tr = T::add_zero();
+            for i in 0..mat.rows() {
+                unsafe {
+                    tr.ref_add_assign(mat.get_unchecked(i, i));
+                }
+            }
+            return Ok(tr);
+        }
+    }
+}
+pub use trace::trace;
+
 mod linear_equation;
 pub use linear_equation::{solve, solve_augmented, SolveResult};
