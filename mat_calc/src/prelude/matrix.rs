@@ -154,21 +154,23 @@ pub fn transposed(args: ObjectPairItem, _: &mut Environment) -> Output {
     }
 }
 
-pub fn clone(args: ObjectPairItem, _: &mut Environment) -> Output {
+pub fn trace(args: ObjectPairItem, _: &mut Environment) -> Output {
     match args {
-        List(_) => return Err(EvalError::syntax("You can only clone one matrix a time".to_string())),
+        List(_) => return Err(EvalError::syntax("You can only calculate trace one matrix a time".to_string())),
         Lit(Matrix(MatrixWrap::Flt(m))) => {
-            return Ok(Lit(Matrix(MatrixWrap::Flt(Box::new(m.clone_data())))));
+            return Ok(Lit(Float(alg::trace(m.as_ref()).map_err(|e| EvalError::value(format!("{e}")))?)));
         },
         Lit(Matrix(MatrixWrap::Rat(m))) => {
-            return Ok(Lit(Matrix(MatrixWrap::Rat(Box::new(m.clone_data())))));
+            return Ok(Lit(Rat(alg::trace(m.as_ref()).map_err(|e| EvalError::value(format!("{e}")))?)));
         },
-        _ => return Err(EvalError::typ(format!("Can only clone a matrix")))
+        _ => return Err(EvalError::typ(format!("Can only calculate trace of a matrix")))
     }
+
 }
+
 
 pub const EXPORTS: [ExportType; 8] = [
     ("inv", 1, &inv), ("eliminate", 1, &eliminate), ("rank", 1, &rank),
     ("reduce", 1, &reduce), ("det", 1, &det), ("solve", 2, &solve),
-    ("transposed", 1, &transposed), ("clone", 1, &clone)
+    ("transposed", 1, &transposed), ("trace", 1, &trace)
 ];

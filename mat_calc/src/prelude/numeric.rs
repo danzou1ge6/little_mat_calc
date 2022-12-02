@@ -1,3 +1,5 @@
+use mat::Mat;
+
 use crate::eval::{Environment, ObjectPairItem};
 
 use super::ExportType;
@@ -20,6 +22,16 @@ pub fn add(args: ObjectPairItem, _: &mut Environment) -> Output {
                 }
                 (Matrix(MatrixWrap::Rat(a)), Matrix(MatrixWrap::Rat(b))) => {
                     return Ok(Lit(Matrix(MatrixWrap::Rat(Box::new(a.add(b.as_ref()))))));
+                }
+                (Float(a), Matrix(MatrixWrap::Flt(b))) => {
+                    let mut b = b.clone_data();
+                    b.scale(a);
+                    return Ok(Lit(Matrix(MatrixWrap::Flt(Box::new(b)))));
+                }
+                (Rat(a), Matrix(MatrixWrap::Rat(b))) => {
+                    let mut b = b.clone_data();
+                    b.scale(a);
+                    return Ok(Lit(Matrix(MatrixWrap::Rat(Box::new(b)))));
                 }
                 (a, b) => return Err(EvalError::typ(format!("Can't add {} and `{}`", a, b))),
             },
