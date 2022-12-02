@@ -93,6 +93,20 @@ pub fn times(args: ObjectPairItem, _: &mut Environment) -> Output {
                         Err(e) => return Err(EvalError::value(format!("{e}"))),
                     }
                 }
+                (Rat(a), Matrix(MatrixWrap::Rat(b))) => {
+                    return Ok(Lit(Matrix(MatrixWrap::Rat({
+                        let mut r = b.clone_data();
+                        r.scale(a);
+                        Box::new(r)
+                    }))));
+                },
+                (Float(a), Matrix(MatrixWrap::Flt(b))) => {
+                    return Ok(Lit(Matrix(MatrixWrap::Flt({
+                        let mut r = b.clone_data();
+                        r.scale(a);
+                        Box::new(r)
+                    }))));
+                },
                 (a, b) => return Err(EvalError::typ(format!("Can't times `{}` and `{}`", a, b))),
             },
             (a, b) => return Err(EvalError::typ(format!("Can't times `{}` and `{}`", a, b))),
