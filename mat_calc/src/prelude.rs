@@ -16,7 +16,6 @@ pub fn all_builtins() -> impl Iterator<Item = BuiltinFunction> {
         .into_iter()
         .chain(list::EXPORTS.into_iter())
         .chain(matrix::EXPORTS.into_iter())
-        .chain(matrix::EXPORTS.into_iter())
         .chain(misc::EXPORTS.into_iter())
 }
 
