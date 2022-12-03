@@ -135,3 +135,45 @@ pub fn concated_mat(items: TokenStream) -> TokenStream {
     ret
 }
 
+use std::process::Command;
+
+
+fn get_compiler_version() -> String {
+    let output = Command::new("rustc")
+        .args(["--version"])
+        .output()
+        .unwrap()
+        .stdout;
+    let output = String::from_utf8(output);
+    let output = output.unwrap();
+    let pieces: Vec<&str> = output.trim().split(' ').collect();
+    pieces[1].to_string()
+}
+
+fn get_host() -> String {
+    let output = Command::new("rustc")
+        .args(["--version", "-v"])
+        .output()
+        .unwrap()
+        .stdout;
+    let output = String::from_utf8(output).unwrap();
+    for line in output.lines() {
+        if line.starts_with("host") {
+            let sp = line.find(": ").unwrap();
+            return line[sp + 2..].to_string();
+        }
+    }
+    panic!("No `host` entry found")
+}
+
+#[proc_macro]
+pub fn compiler_version(_: TokenStream) -> TokenStream {
+    let v = get_compiler_version();
+    quote! { #v }.into()
+}
+
+#[proc_macro]
+pub fn compiler_host(_: TokenStream) -> TokenStream {
+    let host = get_host();
+    quote!(#host).into()
+}

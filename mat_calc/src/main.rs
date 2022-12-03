@@ -1,3 +1,4 @@
+use indoc::indoc;
 use mat_calc::eval::Config;
 use mat_calc::interpreter::Interpreter;
 use mat_calc::interpreter::PendingResult;
@@ -8,6 +9,32 @@ use std::io::Read;
 use std::io::Write;
 use std::process::exit;
 
+use mat_macro::{compiler_host, compiler_version};
+
+fn startup_text() -> String {
+    format!(
+        "Little Mat Calculator [rustc {}] on {}\nType .help to get help",
+        compiler_version!(),
+        compiler_host!()
+    )
+}
+
+const HELP_TEXT: &str = indoc! {"
+AVAILABLE INTEREPTER COMMANDS
+    - `.quit` exits the interepter
+    - `.evalf <path>` evaluates the file at <path>
+    - `.help` displays this message
+
+HELP ON THE CALCULATOR SYNTAX
+    The syntax of this calculator is inspired by scheme.
+    Everything in scheme are *expressions*, and are surrounded by parentheses,
+    for example,
+        `(1)`
+    is a valid expression and evaluates to the rational 1.
+
+    For more information, type
+        `(help 0)`
+"};
 
 /// Lines starting with `#` are regarded as annotations
 fn strip_anno_lines(src: String) -> String {
@@ -16,8 +43,9 @@ fn strip_anno_lines(src: String) -> String {
 
 /// Run a .x command
 fn command(cmd: &str, intp: &mut Interpreter) {
-    if cmd == ".quit" { exit(0); }
-    else if cmd.starts_with(".evalf ") {
+    if cmd == ".quit" {
+        exit(0);
+    } else if cmd.starts_with(".evalf ") {
         match File::open(cmd.trim_start_matches(".evalf ")) {
             Ok(mut file) => {
                 let mut src = Vec::new();
@@ -25,39 +53,33 @@ fn command(cmd: &str, intp: &mut Interpreter) {
                     Ok(_) => {
                         if let Ok(src) = String::from_utf8(src) {
                             interpreter_eval_and_prin(intp, &strip_anno_lines(src));
-                        } else { println!("File is not valid utf-8 encoded source code"); }
-                    },
+                        } else {
+                            println!("File is not valid utf-8 encoded source code");
+                        }
+                    }
                     Err(e) => println!("{e}"),
                 }
-            },
+            }
             Err(e) => println!("{e}"),
         }
+    } else if cmd == ".help" {
+        println!("{HELP_TEXT}");
+        print!("> ");
+    } else {
+        println!("No such command. Type .help for help");
+        print!("> ");
     }
-    else if cmd.starts_with(".maxrecur ") {
-        match cmd.trim_start_matches(".maxrecur ").parse() {
-            Ok(n) => {
-                intp.env.config.max_recursion = n;
-                print!("> ");
-            },
-            Err(_) => {
-                print!("Need a valid `usize`\n> ");
-            }
-        }
-    }
-    else if cmd == ".tcbk" { intp.env.config.trace_back = true; print!("> ") }
-    else if cmd == ".notcbk" { intp.env.config.trace_back = false; print!("> ") }
-    else { println!("No such command"); print!("> "); }
 }
 
 fn interpreter_eval_and_prin<'a>(intp: &'a mut Interpreter, src: &'a str) {
     match intp.eval_line(src) {
         PendingResult::Pending => {
             print!(". ");
-        },
+        }
         PendingResult::Ok(obj) => {
             println!("=> {}", obj);
             print!("> ");
-        },
+        }
         PendingResult::Err(err) => {
             println!("! {}", err);
             print!("> ");
@@ -67,7 +89,7 @@ fn interpreter_eval_and_prin<'a>(intp: &'a mut Interpreter, src: &'a str) {
 
 fn interpreter_loop(intp: &mut Interpreter) {
     print!("> ");
-    
+
     loop {
         io::stdout().flush().unwrap();
 
@@ -81,15 +103,15 @@ fn interpreter_loop(intp: &mut Interpreter) {
         }
 
         interpreter_eval_and_prin(intp, line);
-
     }
 }
 fn main() {
     let config = Config {
         trace_back: false,
-        max_recursion: 1000
+        max_recursion: 1000,
     };
     let mut intp = Interpreter::new(config);
+
+    println!("{}", startup_text());
     interpreter_loop(&mut intp);
 }
-

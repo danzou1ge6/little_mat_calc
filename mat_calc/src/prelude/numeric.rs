@@ -102,14 +102,14 @@ pub fn times(args: ObjectPairItem, _: &mut Environment) -> Output {
                         r.scale(a);
                         Rc::new(r)
                     }))));
-                },
+                }
                 (Float(a), Matrix(MatrixWrap::Flt(b))) => {
                     return Ok(Lit(Matrix(MatrixWrap::Flt({
                         let mut r = b.clone_data();
                         r.scale(a);
                         Rc::new(r)
                     }))));
-                },
+                }
                 (a, b) => return Err(EvalError::typ(format!("Can't times `{}` and `{}`", a, b))),
             },
             (a, b) => return Err(EvalError::typ(format!("Can't times `{}` and `{}`", a, b))),
@@ -208,14 +208,17 @@ pub fn and(args: ObjectPairItem, _: &mut Environment) -> Output {
 
 pub fn to_float(args: ObjectPairItem, _: &mut Environment) -> Output {
     match args {
-        Lit(Rat(x)) => {
-            return Ok(Lit(Float(x.into())))
-        },
+        Lit(Rat(x)) => return Ok(Lit(Float(x.into()))),
         Lit(Matrix(MatrixWrap::Rat(m))) => {
             let m: DataMatrix<f64> = m.clone_data().convert();
             return Ok(Lit(Matrix(MatrixWrap::Flt(Rc::new(m)))));
         }
-        other => return Err(EvalError::typ(format!("Can only convert rational or rational matrix to float, not {}", other)))
+        other => {
+            return Err(EvalError::typ(format!(
+                "Can only convert rational or rational matrix to float, not {}",
+                other
+            )))
+        }
     }
 }
 
@@ -229,7 +232,7 @@ pub const EXPORTS: [BuiltinFunction; 10] = [
             Add two numbers or two matrixes. They must have same kind of data type, rational or float.
             The latter matrix is truncated if it's larger, or is repeated by columns and rows if smaller.
             For example, [1 2 3; 4 5 6;] + [1 2; 4 5;] = [1+1 2+2 3+1; 4+4; 5+5, 6+4;]
-        "}
+        "},
     },
     BuiltinFunction {
         f: &sub,
@@ -239,7 +242,7 @@ pub const EXPORTS: [BuiltinFunction; 10] = [
             Usage: (- a b) -> type(a)
             Sub `b` from `a`, `a` and `b` can be numbers or matrixes.
             If dimensions of matrixes are inconsistent, `b` is processed same way as `+`.
-        "}
+        "},
     },
     BuiltinFunction {
         f: &times,
@@ -250,7 +253,7 @@ pub const EXPORTS: [BuiltinFunction; 10] = [
             Times `a` and `b` if they are numbers, and dot if they are matrixes.
             Or, `a` can be a number and `b` can be a matrix, then `b` is scaled by `a`, but not vice-versa.
             Colunms of `a` and rows of `b` must equal.
-        "}
+        "},
     },
     BuiltinFunction {
         f: &devide,
@@ -259,7 +262,7 @@ pub const EXPORTS: [BuiltinFunction; 10] = [
         help: indoc! {"
             Usage: (/ a b) -> type(b)
             Devide `a` by `b`. Both must be numbers.
-        "}
+        "},
     },
     BuiltinFunction {
         f: &lt,
@@ -268,7 +271,7 @@ pub const EXPORTS: [BuiltinFunction; 10] = [
         help: indoc! {"
             Usage: (< a b) -> bool
             Compare two numbers.
-        "}
+        "},
     },
     BuiltinFunction {
         f: &gt,
@@ -277,7 +280,7 @@ pub const EXPORTS: [BuiltinFunction; 10] = [
         help: indoc! {"
             Usage: (> a b) -> bool
             Compare two numbers.
-        "}
+        "},
     },
     BuiltinFunction {
         f: &eq,
@@ -286,7 +289,7 @@ pub const EXPORTS: [BuiltinFunction; 10] = [
         help: indoc! {"
             Usage: (= a b) -> bool
             Compare two numbers.
-        "}
+        "},
     },
     BuiltinFunction {
         f: &and,
@@ -295,7 +298,7 @@ pub const EXPORTS: [BuiltinFunction; 10] = [
         help: indoc! {"
             Usage: (& a: bool b: bool) -> bool
             AND operation.
-        "}
+        "},
     },
     BuiltinFunction {
         f: &or,
@@ -304,7 +307,7 @@ pub const EXPORTS: [BuiltinFunction; 10] = [
         help: indoc! {"
             Usage: (& a: bool b: bool) -> bool
             OR operation.
-        "}
+        "},
     },
     BuiltinFunction {
         f: &to_float,
@@ -314,6 +317,6 @@ pub const EXPORTS: [BuiltinFunction; 10] = [
             Usage: (tofloat x: rational) -> float
                    (tofloat x: matrix<rational>) -> matrix<float>
             Convert rational to float.
-        "}
-    }
+        "},
+    },
 ];

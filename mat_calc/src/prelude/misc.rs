@@ -1,8 +1,8 @@
-use super::{Output, all_builtins};
+use super::{all_builtins, Output};
 use indoc::indoc;
 use mat::Rational;
 
-use crate::eval::{Environment, ObjectPairItem, BuiltinFunction};
+use crate::eval::{BuiltinFunction, Environment, ObjectPairItem};
 
 use crate::eval::EvalError;
 use crate::eval::Literal::*;
@@ -50,31 +50,95 @@ BUILTINS
         `(help 1)`
 "};
 
-
 pub fn help(args: ObjectPairItem, _: &mut Environment) -> Output {
     match args {
         BuiltinFunc(f) => {
             return Ok(Lit(Str(f.help.to_string())));
-        },
+        }
         Lit(Rat(Rational(0, 1))) => {
             return Ok(Lit(Str(GENERAL_HELP.to_string())));
-        },
+        }
         Lit(Rat(Rational(1, 1))) => {
             let names: Vec<&str> = all_builtins().map(|b| b.name).collect();
-            return Ok(Lit(Str(
-                format!("{}\nUse `(help <name>)` to get detailed information of builtin `<name>`", names.join(" "))
-            )));
+            return Ok(Lit(Str(format!(
+                "{}\nUse `(help <name>)` to get detailed information of builtin `<name>`",
+                names.join(" ")
+            ))));
         }
-        _ => return Err(EvalError::typ(format!("Can only call `help` on builtins; Or use`(help 0)` for general help")))
+        _ => {
+            return Err(EvalError::typ(format!(
+                "Can only call `help` on builtins; Or use`(help 0)` for general help"
+            )))
+        }
     }
 }
 
-pub const EXPORTS: [BuiltinFunction; 1] = [
+pub fn maxrecur(args: ObjectPairItem, env: &mut Environment) -> Output {
+    match args {
+        Lit(Rat(r)) => {
+            if r.1 != 1 {
+                return Err(EvalError::value(format!(
+                    "Can only set max recursion to integer"
+                )));
+            }
+            if r.0 == 0 {
+                let x: i32 = env.config.max_recursion.try_into().map_err(|_| {
+                    EvalError::value(format!(
+                        "Current recursion limit is too large to represent in i32"
+                    ))
+                })?;
+                return Ok(Lit(Rat(x.into())));
+            }
+            env.config.max_recursion =
+                r.0.try_into()
+                    .map_err(|_| EvalError::value(format!("Can't cast to usize")))?;
+            return Ok(Lit(Nil));
+        }
+        _ => {
+            return Err(EvalError::typ(format!(
+                "Can only set max recursion to positive integer"
+            )));
+        }
+    }
+}
+
+pub fn trace_back(args: ObjectPairItem, env: &mut Environment) -> Output {
+    match args {
+        Lit(Bool(b)) => {
+            env.config.trace_back = b;
+            Ok(Lit(Nil))
+        }
+        _ => Err(EvalError::typ(format!(
+            "Can only set trace back on/off to bool"
+        ))),
+    }
+}
+
+pub const EXPORTS: [BuiltinFunction; 3] = [
     BuiltinFunction {
         f: &help,
         name: "help",
         argn: 1,
-        help: "Display help information on builtins."
-    }
+        help: "Display help information on builtins.",
+    },
+    BuiltinFunction {
+        f: &maxrecur,
+        name: "maxrecur",
+        argn: 1,
+        help: indoc! {"
+            Usage: (maxrecur n: rational) -> nil | rational
+            Set the max recursion limit to `n`, where `n` must be positive integer.
+            Or, if `n` is `0`, returns current limit.
+            If `n` is too large, stack overflow might occur.
+        "},
+    },
+    BuiltinFunction {
+        f: &trace_back,
+        name: "traceback",
+        argn: 1,
+        help: indoc! {"
+            Usage: (traceback on: bool) -> nil
+            Toggle if trace back is on
+        "},
+    },
 ];
-

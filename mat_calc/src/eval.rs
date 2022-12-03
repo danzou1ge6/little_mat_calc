@@ -1,11 +1,11 @@
-mod object;
-mod frame;
+mod config;
 mod environment;
 mod error;
-mod config;
+mod frame;
+mod object;
 
-pub use object::{BuiltinFunction, ObjectPair, ObjectPairItem, Literal};
+pub use config::Config;
 pub use environment::Environment;
 pub use error::EvalError;
 pub use frame::Frame;
-pub use config::Config;
+pub use object::{BuiltinFunction, Literal, ObjectPair, ObjectPairItem};

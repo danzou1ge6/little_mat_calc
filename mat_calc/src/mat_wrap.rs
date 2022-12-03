@@ -1,6 +1,6 @@
+use crate::table::Table;
 use mat::{DataMatrix, Mat, Rational};
 use std::rc::Rc;
-use crate::{table::Table};
 
 /// Wrap two types of matrix: [`Rational`] and [`f64`] , and also the symbol table [`Table<Token>`]
 /// These are the only two types supported
@@ -12,21 +12,21 @@ pub enum MatrixWrap {
 
 pub enum MatrixOrTable {
     Matrix(MatrixWrap),
-    Table(Table<String>)
+    Table(Table<String>),
 }
 
 impl MatrixOrTable {
     pub fn matrix(self) -> Option<MatrixWrap> {
         match self {
             MatrixOrTable::Matrix(m) => Some(m),
-            MatrixOrTable::Table(_) => None
+            MatrixOrTable::Table(_) => None,
         }
     }
 
     pub fn table(self) -> Option<Table<String>> {
         match self {
             MatrixOrTable::Matrix(_) => None,
-            MatrixOrTable::Table(t) => Some(t)
+            MatrixOrTable::Table(t) => Some(t),
         }
     }
 }
@@ -51,7 +51,7 @@ enum ParsingMode {
     Rational,
     Float,
     Symbol,
-    None
+    None,
 }
 
 impl TryInto<MatrixOrTable> for &mut dyn Iterator<Item = &str> {
@@ -83,7 +83,11 @@ impl TryInto<MatrixOrTable> for &mut dyn Iterator<Item = &str> {
                         match parsing_mode {
                             ParsingMode::Rational => rats.push(rat),
                             ParsingMode::Float => floats.push(rat.into()),
-                            ParsingMode::Symbol => return Err(ParseMatrixError(format!("Symbol table doesn't accept rational"))),
+                            ParsingMode::Symbol => {
+                                return Err(ParseMatrixError(format!(
+                                    "Symbol table doesn't accept rational"
+                                )))
+                            }
                             ParsingMode::None => {
                                 parsing_mode = ParsingMode::Rational;
                                 rats.push(rat);
@@ -98,8 +102,12 @@ impl TryInto<MatrixOrTable> for &mut dyn Iterator<Item = &str> {
                                     floats = rats.iter().map(|&x| x.into()).collect();
                                     floats.push(flt);
                                     parsing_mode = ParsingMode::Float;
-                                },
-                                ParsingMode::Symbol => return Err(ParseMatrixError(format!("Symbol table doesn't accept float"))),
+                                }
+                                ParsingMode::Symbol => {
+                                    return Err(ParseMatrixError(format!(
+                                        "Symbol table doesn't accept float"
+                                    )))
+                                }
                                 ParsingMode::None => {
                                     parsing_mode = ParsingMode::Float;
                                     floats.push(flt);
@@ -113,7 +121,11 @@ impl TryInto<MatrixOrTable> for &mut dyn Iterator<Item = &str> {
                                     parsing_mode = ParsingMode::Symbol;
                                     words.push(other.to_string());
                                 }
-                                _ => return Err(ParseMatrixError(format!("Symbol table doesn't accept float or rational"))),
+                                _ => {
+                                    return Err(ParseMatrixError(format!(
+                                        "Symbol table doesn't accept float or rational"
+                                    )))
+                                }
                             }
                         }
                     }
@@ -131,20 +143,20 @@ impl TryInto<MatrixOrTable> for &mut dyn Iterator<Item = &str> {
         cols = last_cols;
 
         match parsing_mode {
-            ParsingMode::Float => 
+            ParsingMode::Float => {
                 return Ok(MatrixOrTable::Matrix(MatrixWrap::Flt(Rc::new(
                     DataMatrix::new(floats, rows, cols).unwrap(),
-                )))),
-            ParsingMode::Rational => 
+                ))))
+            }
+            ParsingMode::Rational => {
                 return Ok(MatrixOrTable::Matrix(MatrixWrap::Rat(Rc::new(
                     DataMatrix::new(rats, rows, cols).unwrap(),
-                )))),
+                ))))
+            }
             ParsingMode::Symbol => {
-                return Ok(MatrixOrTable::Table(Table::new(
-                    words, rows, cols
-                ).unwrap()));
-            },
-            ParsingMode::None => return Err(ParseMatrixError(format!("Empty matrix not allowed")))
+                return Ok(MatrixOrTable::Table(Table::new(words, rows, cols).unwrap()));
+            }
+            ParsingMode::None => return Err(ParseMatrixError(format!("Empty matrix not allowed"))),
         }
     }
 }
@@ -170,12 +182,12 @@ mod test {
     use super::*;
     use mat::mat;
 
-
     #[test]
     fn test_parse() {
         let mw: MatrixOrTable = (&mut vec!["1", "1", ";", "2/1", "3", ";"].iter().map(|x| *x)
             as &mut dyn Iterator<Item = &str>)
-            .try_into().unwrap();
+            .try_into()
+            .unwrap();
         match mw.matrix().unwrap() {
             MatrixWrap::Rat(r) => assert_eq!(
                 r.as_ref() as &dyn Mat<Item = Rational>,
@@ -207,8 +219,10 @@ mod test {
             .try_into()
             .unwrap();
         let t = mw.table().unwrap();
-        for i in 0..2 { for j in 0..2 {
-            assert_eq!(t.get(i, j).unwrap(), "a");
-        }}
+        for i in 0..2 {
+            for j in 0..2 {
+                assert_eq!(t.get(i, j).unwrap(), "a");
+            }
+        }
     }
 }

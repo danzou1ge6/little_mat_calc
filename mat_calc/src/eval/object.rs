@@ -33,6 +33,7 @@ impl TryInto<Literal> for Token {
             Nil => Ok(Literal::Nil),
             Rat(r) => Ok(Literal::Rat(r)),
             Matrix(m) => Ok(Literal::Matrix(m)),
+            Str(s) => Ok(Literal::Str(s)),
             Bool(b) => Ok(Literal::Bool(b)),
             _ => Err(()),
         }
@@ -55,7 +56,7 @@ pub struct BuiltinFunction {
     pub f: &'static dyn Fn(ObjectPairItem, &mut Environment) -> Result<ObjectPairItem, EvalError>,
     pub argn: usize,
     pub name: &'static str,
-    pub help: &'static str
+    pub help: &'static str,
 }
 
 #[derive(Clone)]
@@ -79,14 +80,16 @@ pub struct ObjectPair {
 impl ObjectPairItem {
     pub fn make_list(mut v: Vec<ObjectPairItem>) -> Self {
         if v.len() == 1 {
-            return ObjectPairItem::List(
-                Box::new(ObjectPair { first: v.pop().unwrap(), second: ObjectPairItem::Lit(Literal::Nil) })
-            );
+            return ObjectPairItem::List(Box::new(ObjectPair {
+                first: v.pop().unwrap(),
+                second: ObjectPairItem::Lit(Literal::Nil),
+            }));
         }
         let item = v.pop().unwrap();
-        return ObjectPairItem::List(
-            Box::new(ObjectPair { first: item, second: ObjectPairItem::make_list(v) })
-        );
+        return ObjectPairItem::List(Box::new(ObjectPair {
+            first: item,
+            second: ObjectPairItem::make_list(v),
+        }));
     }
 }
 
@@ -105,9 +108,12 @@ mod display {
                 Matrix(m) => write!(f, "\n{m}"),
                 Table(t) => write!(f, "{t}"),
                 Str(s) => {
-                    if s.contains('\n') { write!(f, "\n{s}")
-                    } else { write!(f, "{s}") }
-                },
+                    if s.contains('\n') {
+                        write!(f, "\n{s}")
+                    } else {
+                        write!(f, "{s}")
+                    }
+                }
                 Bool(b) => {
                     if *b {
                         write!(f, "#t")

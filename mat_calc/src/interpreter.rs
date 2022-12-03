@@ -1,9 +1,9 @@
-use super::token_pair::{TokenPairParser, ParseError};
-pub use super::token_pair::PendingResult;
-use super::splitting::SplitBuffer;
-use super::prelude::{inject_builtins, get_prelude_src};
-use super::eval::{Environment, ObjectPairItem, EvalError};
 use super::eval::Config;
+use super::eval::{Environment, EvalError, ObjectPairItem};
+use super::prelude::{get_prelude_src, inject_builtins};
+use super::splitting::SplitBuffer;
+pub use super::token_pair::PendingResult;
+use super::token_pair::{ParseError, TokenPairParser};
 
 mod error {
     use super::EvalError;
@@ -39,7 +39,7 @@ use self::error::InterpreterError;
 
 pub struct Interpreter {
     parser: TokenPairParser,
-    pub env: Environment
+    pub env: Environment,
 }
 
 impl Interpreter {
@@ -49,7 +49,7 @@ impl Interpreter {
 
         let mut n = Self {
             parser: TokenPairParser::new(),
-            env
+            env,
         };
 
         n.eval_line(&get_prelude_src());
@@ -68,12 +68,11 @@ impl Interpreter {
                     Ok(obj) => return PendingResult::Ok(obj),
                     Err(err) => return PendingResult::Err(err.into()),
                 }
-            },
+            }
             PendingResult::Err(err) => {
                 self.parser.clear();
                 return PendingResult::Err(err.into());
-            },
+            }
         }
     }
 }
-

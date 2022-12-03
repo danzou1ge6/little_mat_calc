@@ -7,4 +7,5 @@ edition = "2021"
 
 [dependencies]
 mat = { path = "../" }
+mat_macro = { path = "../mat_macro" }
 indoc = "*"

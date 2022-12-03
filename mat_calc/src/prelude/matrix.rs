@@ -1,13 +1,13 @@
 use crate::eval::BuiltinFunction;
 use crate::eval::{Environment, ObjectPairItem};
 use indoc::indoc;
-use mat::error::MatError;
 use mat::alg;
 use mat::alg::SolveResult;
 use mat::element::LinearElem;
 use mat::element::RefInv;
-use mat::DataMatrix;
+use mat::error::MatError;
 use mat::ConcatedMatrix;
+use mat::DataMatrix;
 use mat::Mat;
 use std::rc::Rc;
 
@@ -222,22 +222,33 @@ pub fn ridentity(args: ObjectPairItem, _: &mut Environment) -> Output {
                     "Need an positive integer, not a fraction".to_string(),
                 ));
             } else {
-                return Ok(Lit(Matrix(MatrixWrap::Rat(Rc::new(
-                    DataMatrix::identity(r.0.try_into().unwrap()),
-                )))));
+                return Ok(Lit(Matrix(MatrixWrap::Rat(Rc::new(DataMatrix::identity(
+                    r.0.try_into().unwrap(),
+                ))))));
             }
         }
         _ => return Err(EvalError::typ(format!("Can only transpose a matrix"))),
     }
 }
 
-
-fn clone_concated<T>(data: Vec<&dyn Mat<Item=T>>, rows: usize, cols: usize) -> Result<DataMatrix<T>, MatError> where T: LinearElem {
+fn clone_concated<T>(
+    data: Vec<&dyn Mat<Item = T>>,
+    rows: usize,
+    cols: usize,
+) -> Result<DataMatrix<T>, MatError>
+where
+    T: LinearElem,
+{
     let mut_data = unsafe {
-        data.into_iter().map(|x| &mut *(x as *const dyn Mat<Item=_> as *mut dyn Mat<Item=_>) as &mut dyn Mat<Item=_>).collect()
+        data.into_iter()
+            .map(|x| {
+                &mut *(x as *const dyn Mat<Item = _> as *mut dyn Mat<Item = _>)
+                    as &mut dyn Mat<Item = _>
+            })
+            .collect()
     };
     let concated = ConcatedMatrix::new(mut_data, rows, cols)?;
-    return Ok(concated.clone_data())
+    return Ok(concated.clone_data());
 }
 
 pub fn concat(args: ObjectPairItem, _: &mut Environment) -> Output {
@@ -256,9 +267,10 @@ pub fn concat(args: ObjectPairItem, _: &mut Environment) -> Output {
                             _ => return Err(EvalError::typ(format!("Can only concat matrix with same type of matrix (rational or float)")))
                         }
                     }
-                    let concated = clone_concated(mt_data, t.rows, t.cols).map_err(|e| EvalError::value(format!("{e}")))?;
-                    return Ok(Lit(Matrix(MatrixWrap::Flt(Rc::new(concated)))))
-                },
+                    let concated = clone_concated(mt_data, t.rows, t.cols)
+                        .map_err(|e| EvalError::value(format!("{e}")))?;
+                    return Ok(Lit(Matrix(MatrixWrap::Flt(Rc::new(concated)))));
+                }
                 Lit(Matrix(MatrixWrap::Rat(_))) => {
                     let mut mt_data = Vec::with_capacity(t.data.len());
                     for o in t.data.iter() {
@@ -267,50 +279,73 @@ pub fn concat(args: ObjectPairItem, _: &mut Environment) -> Output {
                             _ => return Err(EvalError::typ(format!("Can only concat matrix with same type of matrix (rational or float)")))
                         }
                     }
-                    let concated = clone_concated(mt_data, t.rows, t.cols).map_err(|e| EvalError::value(format!("{e}")))?;
-                    return Ok(Lit(Matrix(MatrixWrap::Rat(Rc::new(concated)))))
-                },
-                _ => return Err(EvalError::typ(format!("Can only concat matrixes")))
+                    let concated = clone_concated(mt_data, t.rows, t.cols)
+                        .map_err(|e| EvalError::value(format!("{e}")))?;
+                    return Ok(Lit(Matrix(MatrixWrap::Rat(Rc::new(concated)))));
+                }
+                _ => return Err(EvalError::typ(format!("Can only concat matrixes"))),
             }
-            
-        },
-        _ => return Err(EvalError::typ(format!("Can only concat a table of matrixes")))
+        }
+        _ => {
+            return Err(EvalError::typ(format!(
+                "Can only concat a table of matrixes"
+            )))
+        }
     }
 }
 
 pub fn get(args: ObjectPairItem, _: &mut Environment) -> Output {
     match args {
-        List( box ObjectPair { 
+        List(box ObjectPair {
             first: Lit(Matrix(MatrixWrap::Flt(m))),
-            second: List(box ObjectPair { first: Lit(Rat(i)), second: Lit(Rat(j)) }) 
+            second:
+                List(box ObjectPair {
+                    first: Lit(Rat(i)),
+                    second: Lit(Rat(j)),
+                }),
         }) => {
             if i.1 != 1 || j.1 != 1 {
-                return Err(EvalError::value(format!("Can only index into matrix by integers")));
+                return Err(EvalError::value(format!(
+                    "Can only index into matrix by integers"
+                )));
             }
             if let (Ok(ui), Ok(uj)) = (i.0.try_into(), j.0.try_into()) {
-                return Ok(Lit(Float(*m.get(ui, uj).map_err(|e| EvalError::value(format!("{e}")))?)));
+                return Ok(Lit(Float(
+                    *m.get(ui, uj)
+                        .map_err(|e| EvalError::value(format!("{e}")))?,
+                )));
             } else {
                 return Err(EvalError::value(format!("Bad index")));
             }
-        },
-        List( box ObjectPair { 
+        }
+        List(box ObjectPair {
             first: Lit(Matrix(MatrixWrap::Rat(m))),
-            second: List(box ObjectPair { first: Lit(Rat(i)), second: Lit(Rat(j)) }) 
+            second:
+                List(box ObjectPair {
+                    first: Lit(Rat(i)),
+                    second: Lit(Rat(j)),
+                }),
         }) => {
             if i.1 != 1 || j.1 != 1 {
-                return Err(EvalError::value(format!("Can only index into matrix by integers")));
+                return Err(EvalError::value(format!(
+                    "Can only index into matrix by integers"
+                )));
             }
             if let (Ok(ui), Ok(uj)) = (i.0.try_into(), j.0.try_into()) {
-                return Ok(Lit(Rat(*m.get(ui, uj).map_err(|e| EvalError::value(format!("{e}")))?)));
+                return Ok(Lit(Rat(*m
+                    .get(ui, uj)
+                    .map_err(|e| EvalError::value(format!("{e}")))?)));
             } else {
                 return Err(EvalError::value(format!("Bad index")));
             }
-        },
-        _ => return Err(EvalError::syntax(format!("Can only apply `get` on matrixe and indices must be integers")))
-
+        }
+        _ => {
+            return Err(EvalError::syntax(format!(
+                "Can only apply `get` on matrixe and indices must be integers"
+            )))
+        }
     }
 }
-
 
 pub const EXPORTS: [BuiltinFunction; 12] = [
     BuiltinFunction {
@@ -326,7 +361,7 @@ pub const EXPORTS: [BuiltinFunction; 12] = [
         f: &eliminate,
         argn: 1,
         name: "eliminate",
-        help: "Apply gussian elimination on the matrix."
+        help: "Apply gussian elimination on the matrix.",
     },
     BuiltinFunction {
         f: &rank,
@@ -336,9 +371,9 @@ pub const EXPORTS: [BuiltinFunction; 12] = [
     },
     BuiltinFunction {
         f: &det,
-        argn:1,
+        argn: 1,
         name: "det",
-        help: "Calculate determinant of a matrix"
+        help: "Calculate determinant of a matrix",
     },
     BuiltinFunction {
         f: &solve,
@@ -362,7 +397,7 @@ pub const EXPORTS: [BuiltinFunction; 12] = [
         f: &reduce,
         argn: 1,
         name: "reduce",
-        help: "Calculate the Reduced Upper Echolon Form of a matrix"
+        help: "Calculate the Reduced Upper Echolon Form of a matrix",
     },
     BuiltinFunction {
         f: &trace,
@@ -379,13 +414,13 @@ pub const EXPORTS: [BuiltinFunction; 12] = [
             Calculates the null space of a matrix, returning
             - nil if the null space only consists of {0}
             - a matrix containing a basis for the null space
-        "}
+        "},
     },
     BuiltinFunction {
         f: &ridentity,
         argn: 1,
         name: "ridentity",
-        help: "Returns a rational identity matrix of given row number"
+        help: "Returns a rational identity matrix of given row number",
     },
     BuiltinFunction {
         f: &concat,
@@ -395,7 +430,7 @@ pub const EXPORTS: [BuiltinFunction; 12] = [
             Usage: (concat t: table)
             Concat matrixes in the partition defined by `t`.
             `t` can be, for example, `[a b;]`, which join `b` to the right of `a`.
-        "}
+        "},
     },
     BuiltinFunction {
         f: &get,
@@ -404,6 +439,6 @@ pub const EXPORTS: [BuiltinFunction; 12] = [
         help: indoc! {"
             Usage: (get m: matrix i: rational j: rational)
             Get the `(i, j)` element of matrix `m`.
-        "}
-    }
+        "},
+    },
 ];

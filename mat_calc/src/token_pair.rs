@@ -15,6 +15,8 @@ pub mod token {
         Float(f64),
         /// Matrix
         Matrix(MatrixWrap),
+        /// String
+        Str(String),
         /// Table,
         Table(Table<String>),
         Bool(bool),
@@ -31,6 +33,7 @@ pub mod token {
                 Float(fl) => write!(f, "{}", fl),
                 Matrix(m) => write!(f, "{m}"),
                 Table(t) => write!(f, "{t}"),
+                Str(s) => write!(f, "{s}"),
                 Nil => write!(f, "nil"),
                 Bool(b) => {
                     if *b {
@@ -49,6 +52,9 @@ pub mod token {
         ///
         /// This method won't panic.
         fn from(s: &str) -> Self {
+            if s.starts_with('"') && s.ends_with('"') {
+                return Token::Str(s.trim_matches('"').to_string());
+            }
             if let Ok(r) = s.try_into() {
                 return Token::Rat(r);
             }
@@ -140,7 +146,7 @@ mod pair {
 
 mod parsing {
 
-    use crate::mat_wrap::{MatrixOrTable};
+    use crate::mat_wrap::MatrixOrTable;
 
     use super::pair::*;
     /// Parsing splitted *Pieces* into [`Pair`]
@@ -280,12 +286,12 @@ mod parsing {
                                 Result::Err(e) => return PendingResult::Err(e),
                             };
                         match matrix_table {
-                            MatrixOrTable::Matrix(m) =>
-                                self.stack
-                                    .push(TokenPairItem::Tok(Token::Matrix(m))),
-                            MatrixOrTable::Table(t) => 
-                                self.stack
-                                    .push(TokenPairItem::Tok(Token::Table(t))),
+                            MatrixOrTable::Matrix(m) => {
+                                self.stack.push(TokenPairItem::Tok(Token::Matrix(m)))
+                            }
+                            MatrixOrTable::Table(t) => {
+                                self.stack.push(TokenPairItem::Tok(Token::Table(t)))
+                            }
                         }
                         if let Err(e) = increase_last_cnt(&mut self.cnt_stack) {
                             return Err(e);

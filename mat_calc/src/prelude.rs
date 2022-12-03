@@ -1,18 +1,19 @@
-use crate::eval::{EvalError, Frame, ObjectPairItem, BuiltinFunction};
+use crate::eval::{BuiltinFunction, EvalError, Frame, ObjectPairItem};
 
 use indoc::indoc;
 use std::rc::Rc;
 
 type Output = Result<ObjectPairItem, EvalError>;
 
-mod misc;
 mod constants;
 mod list;
 mod matrix;
+mod misc;
 mod numeric;
 
-pub fn all_builtins() -> impl Iterator<Item=BuiltinFunction> {
-    numeric::EXPORTS.into_iter()
+pub fn all_builtins() -> impl Iterator<Item = BuiltinFunction> {
+    numeric::EXPORTS
+        .into_iter()
         .chain(list::EXPORTS.into_iter())
         .chain(matrix::EXPORTS.into_iter())
         .chain(matrix::EXPORTS.into_iter())
@@ -68,5 +69,3 @@ pub fn get_prelude_src() -> String {
         .filter(|line| !line.starts_with('#'))
         .collect()
 }
-
-

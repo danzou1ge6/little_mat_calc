@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use super::object::*;
+use std::collections::HashMap;
 
 pub struct Frame {
     objects: HashMap<String, ObjectPairItem>,
@@ -7,7 +7,9 @@ pub struct Frame {
 
 impl Frame {
     pub fn new() -> Self {
-        Frame { objects: HashMap::new() }
+        Frame {
+            objects: HashMap::new(),
+        }
     }
 
     pub fn insert(&mut self, name: String, object: ObjectPairItem) {

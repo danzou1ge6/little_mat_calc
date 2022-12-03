@@ -1,12 +1,11 @@
 use crate::eval::ObjectPair;
 use crate::eval::{Environment, ObjectPairItem};
 
-use super::{Output};
+use super::Output;
 use crate::eval::BuiltinFunction;
 use crate::eval::EvalError;
 use crate::eval::Literal::*;
 use crate::eval::ObjectPairItem::*;
-
 
 /// Get the first element of a scheme pair
 pub fn car(args: ObjectPairItem, _: &mut Environment) -> Output {
@@ -63,18 +62,18 @@ pub const EXPORTS: [BuiltinFunction; 3] = [
         f: &car,
         argn: 1,
         name: "car",
-        help: " Get the first element of a pair."
+        help: " Get the first element of a pair.",
     },
     BuiltinFunction {
         f: &cdr,
         argn: 1,
         name: "cdr",
-        help: "Get the second element of a pair"
+        help: "Get the second element of a pair",
     },
     BuiltinFunction {
         f: &con,
         argn: 2,
         name: "con",
-        help: "Concat two elements to a list"
-    }
+        help: "Concat two elements to a list",
+    },
 ];
