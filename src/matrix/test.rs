@@ -9,7 +9,6 @@ fn test_create() {
     assert_eq!(*m.get(0, 1).unwrap(), 2);
     assert_eq!(*m.get(1, 0).unwrap(), 3);
     assert_eq!(*m.get(1, 1).unwrap(), 4);
-
 }
 
 #[test]
@@ -48,10 +47,7 @@ fn test_boradcast_sub() {
 fn test_scale() {
     let mut a = mat_![1 2; 3 4;];
     a.scale(&2);
-    assert_eq!(
-        a,
-        mat_![2 4; 6 8;],
-    )
+    assert_eq!(a, mat_![2 4; 6 8;],)
 }
 
 #[test]
@@ -73,8 +69,7 @@ fn test_transpose() {
     let a: DataMatrix<i32> = mat_![
         1 2 3;
         4 5 6;
-    ].transposed();
+    ]
+    .transposed();
     assert_eq!(a, mat_![1 4; 2 5; 3 6;]);
 }
-
-

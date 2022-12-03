@@ -8,21 +8,25 @@ macro_rules! polynomial {
     };
 }
 
-
 /// Represents a polynomial
 #[derive(Clone)]
-pub struct Polynomial<T> where T: LinearElem {
-    /// Coefficents are stored from low to high, for example, 
+pub struct Polynomial<T>
+where
+    T: LinearElem,
+{
+    /// Coefficents are stored from low to high, for example,
     /// `x^2 + 2x + 3` is stored in `vec![3, 2, 1]`
-    pub coef: Vec<T>
+    pub coef: Vec<T>,
 }
-
 
 mod display {
     use super::*;
-    use std::fmt::{Display, Debug};
+    use std::fmt::{Debug, Display};
 
-    impl<T> Display for Polynomial<T> where T: LinearElem {
+    impl<T> Display for Polynomial<T>
+    where
+        T: LinearElem,
+    {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             for (i, a) in self.coef.iter().enumerate() {
                 if i == 0 {
@@ -36,32 +40,48 @@ mod display {
             write!(f, "")
         }
     }
-    impl<T> Debug for Polynomial<T> where T: LinearElem {
+    impl<T> Debug for Polynomial<T>
+    where
+        T: LinearElem,
+    {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             (self as &dyn Display).fmt(f)
         }
     }
 }
 
-impl<T> AddZero for Polynomial<T> where T: LinearElem {
+impl<T> AddZero for Polynomial<T>
+where
+    T: LinearElem,
+{
     fn add_zero() -> Self {
-        Polynomial { coef: vec![T::add_zero()] }
+        Polynomial {
+            coef: vec![T::add_zero()],
+        }
     }
     fn is_add_zero(&self) -> bool {
         self.coef.len() == 1 && self.coef.first().unwrap().is_add_zero()
     }
 }
 
-impl<T> MulZero for Polynomial<T> where T: LinearElem {
+impl<T> MulZero for Polynomial<T>
+where
+    T: LinearElem,
+{
     fn mul_zero() -> Self {
-        Polynomial { coef: vec![T::mul_zero()] }
+        Polynomial {
+            coef: vec![T::mul_zero()],
+        }
     }
     fn is_mul_zero(&self) -> bool {
         self.coef.len() == 1 && self.coef.first().unwrap().is_mul_zero()
     }
 }
 
-impl<T> RefAddAssign for Polynomial<T> where T: LinearElem {
+impl<T> RefAddAssign for Polynomial<T>
+where
+    T: LinearElem,
+{
     fn ref_add_assign(&mut self, rhs: &Self) {
         if self.coef.len() < rhs.coef.len() {
             self.coef.resize(rhs.coef.len(), T::add_zero());
@@ -72,7 +92,10 @@ impl<T> RefAddAssign for Polynomial<T> where T: LinearElem {
     }
 }
 
-impl<T> RefAdd for Polynomial<T> where T: LinearElem {
+impl<T> RefAdd for Polynomial<T>
+where
+    T: LinearElem,
+{
     type Output = Self;
     fn ref_add(&self, rhs: &Self) -> Self::Output {
         let mut result = self.clone();
@@ -81,7 +104,10 @@ impl<T> RefAdd for Polynomial<T> where T: LinearElem {
     }
 }
 
-impl<T> RefSubAssign for Polynomial<T> where T: LinearElem {
+impl<T> RefSubAssign for Polynomial<T>
+where
+    T: LinearElem,
+{
     fn ref_sub_assign(&mut self, rhs: &Self) {
         if self.coef.len() < rhs.coef.len() {
             self.coef.resize(rhs.coef.len(), T::add_zero());
@@ -92,7 +118,10 @@ impl<T> RefSubAssign for Polynomial<T> where T: LinearElem {
     }
 }
 
-impl<T> RefSub for Polynomial<T> where T: LinearElem {
+impl<T> RefSub for Polynomial<T>
+where
+    T: LinearElem,
+{
     type Output = Self;
     fn ref_sub(&self, rhs: &Self) -> Self::Output {
         let mut result = self.clone();
@@ -101,7 +130,10 @@ impl<T> RefSub for Polynomial<T> where T: LinearElem {
     }
 }
 
-impl<T> RefMul for Polynomial<T> where T: LinearElem {
+impl<T> RefMul for Polynomial<T>
+where
+    T: LinearElem,
+{
     type Output = Self;
 
     fn ref_mul(&self, rhs: &Self) -> Self::Output {
@@ -110,7 +142,11 @@ impl<T> RefMul for Polynomial<T> where T: LinearElem {
 
         for (i, s) in self.coef.iter().enumerate() {
             for (j, r) in rhs.coef.iter().enumerate() {
-                unsafe { result.get_unchecked_mut(i + j).ref_add_assign(&s.ref_mul(r)); }
+                unsafe {
+                    result
+                        .get_unchecked_mut(i + j)
+                        .ref_add_assign(&s.ref_mul(r));
+                }
             }
         }
 
@@ -118,7 +154,10 @@ impl<T> RefMul for Polynomial<T> where T: LinearElem {
     }
 }
 
-impl<T> RefMulAssign for Polynomial<T> where T: LinearElem {
+impl<T> RefMulAssign for Polynomial<T>
+where
+    T: LinearElem,
+{
     fn ref_mul_assign(&mut self, rhs: &Self) {
         let mut result = self.ref_mul(rhs);
         std::mem::swap(&mut result, self);
@@ -127,12 +166,14 @@ impl<T> RefMulAssign for Polynomial<T> where T: LinearElem {
 
 impl<T> LinearElem for Polynomial<T> where T: LinearElem {}
 
-impl<T> From<T> for Polynomial<T> where T: LinearElem {
+impl<T> From<T> for Polynomial<T>
+where
+    T: LinearElem,
+{
     fn from(x: T) -> Self {
         Polynomial { coef: vec![x] }
     }
 }
-
 
 #[cfg(test)]
 mod test {
@@ -162,4 +203,3 @@ mod test {
         assert_eq!(a().ref_mul(&b()).coef, vec![1, 3, 3, 1]);
     }
 }
-

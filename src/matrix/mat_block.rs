@@ -1,8 +1,7 @@
-use crate::element::*;
 use super::*;
+use crate::element::*;
 
-
-pub struct MatBlock<'a, T: LinearElem + 'a>(pub Box<dyn Mat<Item=T> + 'a>);
+pub struct MatBlock<'a, T: LinearElem + 'a>(pub Box<dyn Mat<Item = T> + 'a>);
 
 #[macro_export]
 macro_rules! mat_block {
@@ -11,51 +10,68 @@ macro_rules! mat_block {
     };
 }
 
-
 mod display {
 
-    use super::*;
     use super::super::display::mat_print_buf;
-    use std::fmt::{Display, Debug};
+    use super::*;
+    use std::fmt::{Debug, Display};
 
-    impl<'a, T> Display for MatBlock<'a, T> where T:  LinearElem + 'a {
+    impl<'a, T> Display for MatBlock<'a, T>
+    where
+        T: LinearElem + 'a,
+    {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             mat_print_buf(self.0.as_ref(), f)
         }
     }
 
-    impl<'a, T> Debug for MatBlock<'a, T> where T:  LinearElem + 'a {
+    impl<'a, T> Debug for MatBlock<'a, T>
+    where
+        T: LinearElem + 'a,
+    {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             mat_print_buf(self.0.as_ref(), f)
         }
     }
 }
 
-impl<'a, T> AddZero for MatBlock<'a, T> where T:  LinearElem + 'a {
+impl<'a, T> AddZero for MatBlock<'a, T>
+where
+    T: LinearElem + 'a,
+{
     fn add_zero() -> Self {
         MatBlock(Box::new(DataMatrix::zeros(1, 1)))
     }
     fn is_add_zero(&self) -> bool {
-        for i in 0..self.0.rows() { for j in 0..self.0.cols() {
-            unsafe { if !self.0.get_unchecked(i, j).is_add_zero() {
-                    return false
-            } }
-        }}
+        for i in 0..self.0.rows() {
+            for j in 0..self.0.cols() {
+                unsafe {
+                    if !self.0.get_unchecked(i, j).is_add_zero() {
+                        return false;
+                    }
+                }
+            }
+        }
         return true;
     }
 }
 
-impl<'a, T> MulZero for MatBlock<'a, T> where T:  LinearElem + 'a {
+impl<'a, T> MulZero for MatBlock<'a, T>
+where
+    T: LinearElem + 'a,
+{
     fn is_mul_zero(&self) -> bool {
-        for i in 0..self.0.rows() { for j in 0..self.0.cols() {
-            unsafe {
-                if i == j && !self.0.get_unchecked(i, j).is_mul_zero() {
-                    return false;
-                } else if i != j && !self.0.get_unchecked(i, j).is_add_zero() {
-                    return false;
+        for i in 0..self.0.rows() {
+            for j in 0..self.0.cols() {
+                unsafe {
+                    if i == j && !self.0.get_unchecked(i, j).is_mul_zero() {
+                        return false;
+                    } else if i != j && !self.0.get_unchecked(i, j).is_add_zero() {
+                        return false;
+                    }
                 }
             }
-        }}
+        }
         return true;
     }
     fn mul_zero() -> Self {
@@ -63,17 +79,26 @@ impl<'a, T> MulZero for MatBlock<'a, T> where T:  LinearElem + 'a {
     }
 }
 
-impl<'a, T> RefSubAssign for MatBlock<'a, T> where T:  LinearElem + 'a {
+impl<'a, T> RefSubAssign for MatBlock<'a, T>
+where
+    T: LinearElem + 'a,
+{
     fn ref_sub_assign(&mut self, rhs: &Self) {
         self.0.sub_assign(rhs.0.as_ref())
     }
 }
-impl<'a, T> RefAddAssign for MatBlock<'a, T> where T:  LinearElem + 'a {
+impl<'a, T> RefAddAssign for MatBlock<'a, T>
+where
+    T: LinearElem + 'a,
+{
     fn ref_add_assign(&mut self, rhs: &Self) {
         self.0.add_assign(rhs.0.as_ref())
     }
 }
-impl<'a, T> RefMulAssign for MatBlock<'a, T> where T:  LinearElem + 'a {
+impl<'a, T> RefMulAssign for MatBlock<'a, T>
+where
+    T: LinearElem + 'a,
+{
     fn ref_mul_assign(&mut self, rhs: &Self) {
         let result = self.0.dot(rhs.0.as_ref()).unwrap();
         let mut result = MatBlock(Box::new(result));
@@ -81,8 +106,10 @@ impl<'a, T> RefMulAssign for MatBlock<'a, T> where T:  LinearElem + 'a {
     }
 }
 
-
-impl<'a, T> RefSub for MatBlock<'a, T> where T:  LinearElem + 'a {
+impl<'a, T> RefSub for MatBlock<'a, T>
+where
+    T: LinearElem + 'a,
+{
     type Output = Self;
     fn ref_sub(&self, rhs: &Self) -> Self::Output {
         let mut result = self.0.clone_data();
@@ -90,7 +117,10 @@ impl<'a, T> RefSub for MatBlock<'a, T> where T:  LinearElem + 'a {
         MatBlock(Box::new(result))
     }
 }
-impl<'a, T> RefAdd for MatBlock<'a, T> where T:  LinearElem + 'a {
+impl<'a, T> RefAdd for MatBlock<'a, T>
+where
+    T: LinearElem + 'a,
+{
     type Output = Self;
     fn ref_add(&self, rhs: &Self) -> Self::Output {
         let mut result = self.0.clone_data();
@@ -98,34 +128,42 @@ impl<'a, T> RefAdd for MatBlock<'a, T> where T:  LinearElem + 'a {
         MatBlock(Box::new(result))
     }
 }
-impl<'a, T> RefMul for MatBlock<'a, T> where T:  LinearElem + 'a {
+impl<'a, T> RefMul for MatBlock<'a, T>
+where
+    T: LinearElem + 'a,
+{
     type Output = Self;
     fn ref_mul(&self, rhs: &Self) -> Self::Output {
         MatBlock(Box::new(self.0.dot(rhs.0.as_ref()).unwrap()))
     }
 }
 
-impl<'a, T> RefInv for MatBlock<'a, T> where T:  LinearElem + 'a + RefInv {
+impl<'a, T> RefInv for MatBlock<'a, T>
+where
+    T: LinearElem + 'a + RefInv,
+{
     fn inv(&self) -> Self {
         use crate::alg::inv;
         MatBlock(Box::new(inv(&mut self.0.clone_data()).unwrap()))
     }
 }
 
-impl<'a, T> Clone for MatBlock<'a, T> where T:  LinearElem + 'a {
+impl<'a, T> Clone for MatBlock<'a, T>
+where
+    T: LinearElem + 'a,
+{
     fn clone(&self) -> Self {
         MatBlock(Box::new(self.0.clone_data()))
     }
 }
 
-impl<'a, T> LinearElem for MatBlock<'a, T> where T:  LinearElem + 'a {}
-
+impl<'a, T> LinearElem for MatBlock<'a, T> where T: LinearElem + 'a {}
 
 #[cfg(test)]
 mod test {
-    use crate::{DataMatrix};
-    use mat_macro::mat_;
     use super::*;
+    use crate::DataMatrix;
+    use mat_macro::mat_;
 
     #[test]
     fn test_blocked_mat() {
@@ -144,13 +182,18 @@ mod test {
         // 0 0 0 2
 
         m.row(0).unwrap().add_assign(
-            m.row(1).unwrap().clone_data().scale(&mat_block!(mat_![2 0; 0 2;]))
+            m.row(1)
+                .unwrap()
+                .clone_data()
+                .scale(&mat_block!(mat_![2 0; 0 2;])),
         );
 
-        assert_eq!(m, mat_![
-            (mat_block!(mat_![1 2; 3 4;])) (mat_block!(mat_![5 6; 0 5;]));
-            (mat_block!(mat_![0 0; 0 0;])) (mat_block!(mat_![2 3; 0 2;]));
-        ]);
-
+        assert_eq!(
+            m,
+            mat_![
+                (mat_block!(mat_![1 2; 3 4;])) (mat_block!(mat_![5 6; 0 5;]));
+                (mat_block!(mat_![0 0; 0 0;])) (mat_block!(mat_![2 3; 0 2;]));
+            ]
+        );
     }
 }

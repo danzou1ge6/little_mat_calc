@@ -5,7 +5,7 @@ pub mod rational;
 pub mod polynomial;
 
 /// Defines the trait that elements in a matrix must satisfy
-/// 
+///
 /// In short, these elements must be *linear*
 pub mod element;
 
@@ -15,14 +15,14 @@ pub mod matrix;
 /// Errors related to matrix operations
 pub mod error;
 
-/// A macro to create [`DataMatrix`] with known dimension
-pub use mat_macro::mat;
 /// A macro to concat blocks of matrixs
 pub use mat_macro::concated_mat;
+/// A macro to create [`DataMatrix`] with known dimension
+pub use mat_macro::mat;
 
 // Exports
-pub use matrix::{ConcatedMatrix, DataMatrix, SliceMatrix, EliminatedMatrix, Mat};
 pub use matrix::alg;
-pub use rational::Rational;
-pub use polynomial::Polynomial;
 pub use matrix::MatBlock;
+pub use matrix::{ConcatedMatrix, DataMatrix, EliminatedMatrix, Mat, SliceMatrix};
+pub use polynomial::Polynomial;
+pub use rational::Rational;

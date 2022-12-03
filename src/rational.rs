@@ -1,11 +1,11 @@
-use std::ops::{Add, Sub, Div, Mul, AddAssign, SubAssign, MulAssign, DivAssign};
-use std::fmt::Display;
 use std::cmp::Ordering;
+use std::fmt::Display;
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
 /// A rational number
-/// 
+///
 /// Rational(1, 2) = 1/2
-/// 
+///
 /// 1 will always be (1, 1);
 /// 0 will always be (0, 1);
 /// and only `p` will be negative if `p/q` is negative
@@ -13,8 +13,11 @@ use std::cmp::Ordering;
 pub struct Rational(pub i32, pub i32);
 
 fn gcd(m: i32, n: i32) -> i32 {
-    if n == 0 { m }
-    else { gcd(n, m % n) }
+    if n == 0 {
+        m
+    } else {
+        gcd(n, m % n)
+    }
 }
 
 #[macro_export]
@@ -27,11 +30,16 @@ macro_rules! rational {
 
 impl Rational {
     /// Create a new Rational
-    /// 
+    ///
     /// Simplification will be run if using this method
     pub fn new(mut p: i32, mut q: i32) -> Self {
-        if q < 0 { p = -p; q = -q };
-        if q == 0 { panic!("Don't initialize a Rational with {}/0!", p); }
+        if q < 0 {
+            p = -p;
+            q = -q
+        };
+        if q == 0 {
+            panic!("Don't initialize a Rational with {}/0!", p);
+        }
 
         let mut ret = Rational(p, q);
         ret.simplify();
@@ -39,14 +47,20 @@ impl Rational {
     }
 
     /// Simplify the rational, on that it's valid, meaning q != 0 for p/q
-    /// 
+    ///
     /// Does the following
     /// - if `p=0`, make `q=1`;
     /// - move the `-` to `p`
     /// - divide `p,q` by `gcd(p,q)`
     fn simplify(&mut self) {
-        if self.0 == 0 { self.1 = 1; return; }
-        if self.1 < 0 { self.0 = - self.0; self.1 = - self.1}
+        if self.0 == 0 {
+            self.1 = 1;
+            return;
+        }
+        if self.1 < 0 {
+            self.0 = -self.0;
+            self.1 = -self.1
+        }
 
         let t = gcd(self.0.abs(), self.1.abs());
         self.0 /= t;
@@ -57,12 +71,11 @@ impl Rational {
     pub fn inv(self) -> Self {
         Self(self.1, self.0)
     }
-    
+
     pub fn pow(self, n: u32) -> Self {
         Self(self.0.pow(n), self.1.pow(n))
     }
 }
-
 
 impl Add for Rational {
     type Output = Self;
@@ -92,10 +105,7 @@ impl Mul for Rational {
     type Output = Self;
 
     fn mul(self, rhs: Self) -> Self::Output {
-        
-        let mut ret = Rational(
-            self.0 * rhs.0, self.1 * rhs.1
-        );
+        let mut ret = Rational(self.0 * rhs.0, self.1 * rhs.1);
         ret.simplify();
         ret
     }
@@ -121,7 +131,7 @@ impl Display for Rational {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if self.0 == 0 {
             write!(f, "0")
-        } else if self.1 == 1{
+        } else if self.1 == 1 {
             write!(f, "{}", self.0)
         } else {
             write!(f, "{}/{}", self.0, self.1)
@@ -182,22 +192,27 @@ impl DivAssign for Rational {
 use crate::element::*;
 
 impl AddZero for Rational {
-    fn add_zero() -> Self { Rational(0, 1) }
-    fn is_add_zero(&self) -> bool { self.0 == 0 }
+    fn add_zero() -> Self {
+        Rational(0, 1)
+    }
+    fn is_add_zero(&self) -> bool {
+        self.0 == 0
+    }
 }
 
 impl MulZero for Rational {
-    fn mul_zero() -> Self { Rational(1, 1) }
-    fn is_mul_zero(&self) -> bool { self.0 == 1 && self.1 == 1 }
+    fn mul_zero() -> Self {
+        Rational(1, 1)
+    }
+    fn is_mul_zero(&self) -> bool {
+        self.0 == 1 && self.1 == 1
+    }
 }
-
 
 impl LinearElem for Rational {}
 
-
 #[cfg(test)]
 mod test {
-    
 
     #[test]
     fn test_new() {
