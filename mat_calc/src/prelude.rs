@@ -1,11 +1,11 @@
-use crate::eval::Environment;
-use crate::eval::{BuiltinFunction, EvalError, Frame, ObjectPairItem};
+use crate::eval::{EvalError, Frame, ObjectPairItem};
 
 use indoc::indoc;
 use std::rc::Rc;
 
 type Output = Result<ObjectPairItem, EvalError>;
 
+mod misc;
 mod constants;
 mod list;
 mod matrix;
@@ -13,19 +13,15 @@ mod numeric;
 
 /// Inject all builtin functions in to `frame`, which is the root frame
 pub fn inject_builtins(frame: &mut Frame) {
-    for (name, argn, f) in numeric::EXPORTS
+    for func in numeric::EXPORTS
         .into_iter()
         .chain(list::EXPORTS.into_iter())
         .chain(matrix::EXPORTS.into_iter())
+        .chain(misc::EXPORTS.into_iter())
     {
-        let builtin_func = BuiltinFunction {
-            f: Box::new(f),
-            argn,
-            name: name.to_string(),
-        };
         frame.insert(
-            name.to_string(),
-            ObjectPairItem::BuiltinFunc(Rc::new(builtin_func)),
+            func.name.to_string(),
+            ObjectPairItem::BuiltinFunc(Rc::new(func)),
         );
     }
 
@@ -70,8 +66,4 @@ pub fn get_prelude_src() -> String {
         .collect()
 }
 
-type ExportType = (
-    &'static str, // name
-    usize,        // arg count
-    &'static dyn Fn(ObjectPairItem, &mut Environment) -> Output,
-);
+

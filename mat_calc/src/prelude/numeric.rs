@@ -1,10 +1,11 @@
+use indoc::indoc;
 use mat::DataMatrix;
 use mat::Mat;
 use std::rc::Rc;
 
+use crate::eval::BuiltinFunction;
 use crate::eval::{Environment, ObjectPairItem};
 
-use super::ExportType;
 use super::Output;
 use crate::eval::EvalError;
 use crate::eval::Literal::*;
@@ -218,15 +219,101 @@ pub fn to_float(args: ObjectPairItem, _: &mut Environment) -> Output {
     }
 }
 
-pub const EXPORTS: [ExportType; 10] = [
-    ("+", 2, &add),
-    ("-", 2, &sub),
-    ("*", 2, &times),
-    ("/", 2, &devide),
-    ("<", 2, &lt),
-    (">", 2, &gt),
-    ("=", 2, &eq),
-    ("&", 2, &and),
-    ("|", 2, &or),
-    ("tofloat", 1, &to_float),
+pub const EXPORTS: [BuiltinFunction; 10] = [
+    BuiltinFunction {
+        f: &add,
+        name: "+",
+        argn: 2,
+        help: indoc! {"
+            Usage: (+ a b) -> type(a)
+            Add two numbers or two matrixes. They must have same kind of data type, rational or float.
+            The latter matrix is truncated if it's larger, or is repeated by columns and rows if smaller.
+            For example, [1 2 3; 4 5 6;] + [1 2; 4 5;] = [1+1 2+2 3+1; 4+4; 5+5, 6+4;]
+        "}
+    },
+    BuiltinFunction {
+        f: &sub,
+        name: "-",
+        argn: 2,
+        help: indoc! {"
+            Usage: (- a b) -> type(a)
+            Sub `b` from `a`, `a` and `b` can be numbers or matrixes.
+            If dimensions of matrixes are inconsistent, `b` is processed same way as `+`.
+        "}
+    },
+    BuiltinFunction {
+        f: &times,
+        name: "*",
+        argn: 2,
+        help: indoc! {"
+            Usage: (* a b) -> type(b)
+            Times `a` and `b` if they are numbers, and dot if they are matrixes.
+            Or, `a` can be a number and `b` can be a matrix, then `b` is scaled by `a`, but not vice-versa.
+            Colunms of `a` and rows of `b` must equal.
+        "}
+    },
+    BuiltinFunction {
+        f: &devide,
+        name: "/",
+        argn: 2,
+        help: indoc! {"
+            Usage: (/ a b) -> type(b)
+            Devide `a` by `b`. Both must be numbers.
+        "}
+    },
+    BuiltinFunction {
+        f: &lt,
+        name: "<",
+        argn: 2,
+        help: indoc! {"
+            Usage: (< a b) -> bool
+            Compare two numbers.
+        "}
+    },
+    BuiltinFunction {
+        f: &gt,
+        name: ">",
+        argn: 2,
+        help: indoc! {"
+            Usage: (> a b) -> bool
+            Compare two numbers.
+        "}
+    },
+    BuiltinFunction {
+        f: &eq,
+        name: "=",
+        argn: 2,
+        help: indoc! {"
+            Usage: (= a b) -> bool
+            Compare two numbers.
+        "}
+    },
+    BuiltinFunction {
+        f: &and,
+        name: "&",
+        argn: 2,
+        help: indoc! {"
+            Usage: (& a: bool b: bool) -> bool
+            AND operation.
+        "}
+    },
+    BuiltinFunction {
+        f: &or,
+        name: "|",
+        argn: 2,
+        help: indoc! {"
+            Usage: (& a: bool b: bool) -> bool
+            OR operation.
+        "}
+    },
+    BuiltinFunction {
+        f: &to_float,
+        name: "tofloat",
+        argn: 1,
+        help: indoc! {"
+            Usage: (tofloat x: rational) -> float
+                   (tofloat x: matrix<rational>) -> matrix<float>
+            Convert rational to float.
+        "}
+    }
 ];

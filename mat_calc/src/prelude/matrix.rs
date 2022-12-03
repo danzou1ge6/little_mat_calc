@@ -1,4 +1,6 @@
+use crate::eval::BuiltinFunction;
 use crate::eval::{Environment, ObjectPairItem};
+use indoc::indoc;
 use mat::error::MatError;
 use mat::alg;
 use mat::alg::SolveResult;
@@ -9,7 +11,6 @@ use mat::ConcatedMatrix;
 use mat::Mat;
 use std::rc::Rc;
 
-use super::ExportType;
 use super::Output;
 use crate::eval::EvalError;
 use crate::eval::Literal::*;
@@ -278,16 +279,89 @@ pub fn concat(args: ObjectPairItem, _: &mut Environment) -> Output {
 }
 
 
-pub const EXPORTS: [ExportType; 11] = [
-    ("inv", 1, &inv),
-    ("eliminate", 1, &eliminate),
-    ("rank", 1, &rank),
-    ("reduce", 1, &reduce),
-    ("det", 1, &det),
-    ("solve", 2, &solve),
-    ("transpose", 1, &transpose),
-    ("trace", 1, &trace),
-    ("nullspace", 1, &null_space),
-    ("ridentity", 1, &ridentity),
-    ("concat", 1, &concat),
+pub const EXPORTS: [BuiltinFunction; 11] = [
+    BuiltinFunction {
+        f: &inv,
+        argn: 1,
+        name: "inv",
+        help: indoc! {"
+            Calculate the inversion of a INVERTIBLE matrix;
+            Or 1/x if x is a number.
+        "},
+    },
+    BuiltinFunction {
+        f: &eliminate,
+        argn: 1,
+        name: "eliminate",
+        help: "Apply gussian elimination on the matrix."
+    },
+    BuiltinFunction {
+        f: &rank,
+        argn: 1,
+        name: "rank",
+        help: "Calculate rank of a matrix",
+    },
+    BuiltinFunction {
+        f: &det,
+        argn:1,
+        name: "det",
+        help: "Calculate determinant of a matrix"
+    },
+    BuiltinFunction {
+        f: &solve,
+        argn: 2,
+        name: "solve",
+        help: indoc! {"
+            Usage: (solve A b) -> nil | (matrix matrix)
+            Solve linear equation `Ax=b`, returning
+            - nil if there is no solution
+            - a one-column matrix if there is only one solution
+            - `(general special)` where both are matrixes
+        "},
+    },
+    BuiltinFunction {
+        f: &transpose,
+        argn: 1,
+        name: "transpose",
+        help: "Transpose a matrix.",
+    },
+    BuiltinFunction {
+        f: &reduce,
+        argn: 1,
+        name: "reduce",
+        help: "Calculate the Reduced Upper Echolon Form of a matrix"
+    },
+    BuiltinFunction {
+        f: &trace,
+        argn: 1,
+        name: "trace",
+        help: "Calculate the trace of a matrix",
+    },
+    BuiltinFunction {
+        f: &null_space,
+        argn: 1,
+        name: "trace",
+        help: indoc! {"
+            Usage: (nullspace x: matrix) -> nil | matrix
+            Calculates the null space of a matrix, returning
+            - nil if the null space only consists of {0}
+            - a matrix containing a basis for the null space
+        "}
+    },
+    BuiltinFunction {
+        f: &ridentity,
+        argn: 1,
+        name: "ridentity",
+        help: "Returns a rational identity matrix of given row number"
+    },
+    BuiltinFunction {
+        f: &concat,
+        argn: 1,
+        name: "concat",
+        help: indoc! {"
+            Usage: (concat t: table)
+            Concat matrixes in the partition defined by `t`.
+            `t` can be, for example, `[a b;]`, which join `b` to the right of `a`.
+        "}
+    }
 ];

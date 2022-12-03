@@ -15,6 +15,7 @@ pub enum Literal {
     Table(Box<Table<ObjectPairItem>>),
     /// `nil`
     Nil,
+    Str(String),
     Bool(bool),
 }
 
@@ -51,9 +52,10 @@ pub struct Function {
 
 /// Represents a builtin-function, eg add, substract, con
 pub struct BuiltinFunction {
-    pub f: Box<dyn Fn(ObjectPairItem, &mut Environment) -> Result<ObjectPairItem, EvalError>>,
+    pub f: &'static dyn Fn(ObjectPairItem, &mut Environment) -> Result<ObjectPairItem, EvalError>,
     pub argn: usize,
-    pub name: String,
+    pub name: &'static str,
+    pub help: &'static str
 }
 
 #[derive(Clone)]
@@ -101,6 +103,10 @@ mod display {
                 Nil => write!(f, "nil"),
                 Matrix(m) => write!(f, "\n{m}"),
                 Table(t) => write!(f, "{t}"),
+                Str(s) => {
+                    if s.contains('\n') { write!(f, "\n{s}")
+                    } else { write!(f, "{s}") }
+                },
                 Bool(b) => {
                     if *b {
                         write!(f, "#t")

@@ -1,7 +1,8 @@
 use crate::eval::ObjectPair;
 use crate::eval::{Environment, ObjectPairItem};
 
-use super::{Output, ExportType};
+use super::{Output};
+use crate::eval::BuiltinFunction;
 use crate::eval::EvalError;
 use crate::eval::Literal::*;
 use crate::eval::ObjectPairItem::*;
@@ -58,4 +59,23 @@ pub fn con(args: ObjectPairItem, _: &mut Environment) -> Output {
     }
 }
 
-pub const EXPORTS: [ExportType; 3] = [("car", 1, &car), ("cdr", 1, &cdr), ("con", 2, &con)];
+pub const EXPORTS: [BuiltinFunction; 3] = [
+    BuiltinFunction {
+        f: &car,
+        argn: 1,
+        name: "car",
+        help: " Get the first element of a pair."
+    },
+    BuiltinFunction {
+        f: &cdr,
+        argn: 1,
+        name: "cdr",
+        help: "Get the second element of a pair"
+    },
+    BuiltinFunction {
+        f: &con,
+        argn: 2,
+        name: "con",
+        help: "Concat two elements to a list"
+    }
+];
