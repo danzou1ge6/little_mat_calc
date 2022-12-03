@@ -1,5 +1,5 @@
 use crate::table::Table;
-use mat::{DataMatrix, Mat, Rational};
+use mat::{DataMatrix, Mat, Rational, rational};
 use std::rc::Rc;
 
 /// Wrap two types of matrix: [`Rational`] and [`f64`] , and also the symbol table [`Table<Token>`]
@@ -77,57 +77,64 @@ impl TryInto<MatrixOrTable> for &mut dyn Iterator<Item = &str> {
                     last_cols = cols;
                     cols = 0;
                 }
-                other => {
                     // if rational
-                    if let Ok(rat) = other.try_into() {
-                        match parsing_mode {
-                            ParsingMode::Rational => rats.push(rat),
-                            ParsingMode::Float => floats.push(rat.into()),
-                            ParsingMode::Symbol => {
-                                return Err(ParseMatrixError(format!(
-                                    "Symbol table doesn't accept rational"
-                                )))
-                            }
-                            ParsingMode::None => {
-                                parsing_mode = ParsingMode::Rational;
-                                rats.push(rat);
-                            }
-                        }
-                    } else {
-                        // if float
-                        if let Ok(flt) = other.parse() {
+                other => {
+                    match other.try_into() {
+                        Err(rational::ParseError::ZeroDivision) =>
+                            // zero division
+                            return Err(ParseMatrixError(format!("Can't devide by zero"))),
+                        Ok(rat) => {
+                            // rational
                             match parsing_mode {
-                                ParsingMode::Float => floats.push(flt),
-                                ParsingMode::Rational => {
-                                    floats = rats.iter().map(|&x| x.into()).collect();
-                                    floats.push(flt);
-                                    parsing_mode = ParsingMode::Float;
-                                }
+                                ParsingMode::Rational => rats.push(rat),
+                                ParsingMode::Float => floats.push(rat.into()),
                                 ParsingMode::Symbol => {
                                     return Err(ParseMatrixError(format!(
-                                        "Symbol table doesn't accept float"
+                                        "Symbol table doesn't accept rational"
                                     )))
                                 }
                                 ParsingMode::None => {
-                                    parsing_mode = ParsingMode::Float;
-                                    floats.push(flt);
+                                    parsing_mode = ParsingMode::Rational;
+                                    rats.push(rat);
                                 }
                             }
-                        // if symbol table
-                        } else {
-                            match parsing_mode {
-                                ParsingMode::Symbol => words.push(other.to_string()),
-                                ParsingMode::None => {
-                                    parsing_mode = ParsingMode::Symbol;
-                                    words.push(other.to_string());
+                        },
+                        Err(rational::ParseError::NotARational) => {
+                            // if float
+                            if let Ok(flt) = other.parse() {
+                                match parsing_mode {
+                                    ParsingMode::Float => floats.push(flt),
+                                    ParsingMode::Rational => {
+                                        floats = rats.iter().map(|&x| x.into()).collect();
+                                        floats.push(flt);
+                                        parsing_mode = ParsingMode::Float;
+                                    }
+                                    ParsingMode::Symbol => {
+                                        return Err(ParseMatrixError(format!(
+                                            "Symbol table doesn't accept float"
+                                        )))
+                                    }
+                                    ParsingMode::None => {
+                                        parsing_mode = ParsingMode::Float;
+                                        floats.push(flt);
+                                    }
                                 }
-                                _ => {
-                                    return Err(ParseMatrixError(format!(
-                                        "Symbol table doesn't accept float or rational"
-                                    )))
+                            // if symbol table
+                            } else {
+                                match parsing_mode {
+                                    ParsingMode::Symbol => words.push(other.to_string()),
+                                    ParsingMode::None => {
+                                        parsing_mode = ParsingMode::Symbol;
+                                        words.push(other.to_string());
+                                    }
+                                    _ => {
+                                        return Err(ParseMatrixError(format!(
+                                            "Symbol table doesn't accept float or rational"
+                                        )))
+                                    }
                                 }
                             }
-                        }
+                        },
                     }
                     cols += 1;
                 }

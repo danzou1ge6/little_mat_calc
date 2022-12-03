@@ -5,6 +5,7 @@ pub enum EvalError {
     TypeError(Vec<String>),
     ValueError(Vec<String>),
     RecursionError(Vec<String>),
+    ZeroDivisionError(Vec<String>),
 }
 
 impl EvalError {
@@ -22,6 +23,9 @@ impl EvalError {
     }
     pub fn recursion(msg: String) -> Self {
         Self::RecursionError(vec![msg])
+    }
+    pub fn zero_division(msg: String) -> Self {
+        Self::ZeroDivisionError(vec![msg])
     }
 
     pub fn cat_msg(self, msg: String) -> Self {
@@ -46,6 +50,10 @@ impl EvalError {
                 stack.push(msg);
                 stack
             }),
+            Self::ZeroDivisionError(mut stack) => Self::ZeroDivisionError({
+                stack.push(msg);
+                stack
+            }),
         }
     }
 }
@@ -58,6 +66,7 @@ impl std::fmt::Display for EvalError {
             Self::TypeError(stack) => ("TypeError", stack),
             Self::ValueError(stack) => ("ValueError", stack),
             Self::RecursionError(stack) => ("RecursionError", stack),
+            Self::ZeroDivisionError(stack) => ("ZeroDivisionError", stack),
         };
 
         write!(f, "{}\n    {}", name, stack.join("\n    "))

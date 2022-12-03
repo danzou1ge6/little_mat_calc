@@ -1,7 +1,10 @@
 pub mod token {
     use crate::{mat_wrap::MatrixWrap, table::Table};
     use mat::Rational;
+    use mat::rational;
     use std::fmt;
+
+    use super::parsing;
 
     #[derive(Debug, Clone)]
     /// Abstraction of *Pieces* in Scheme
@@ -46,32 +49,34 @@ pub mod token {
         }
     }
 
-    impl From<&str> for Token {
+    impl TryFrom<&str> for Token {
         /// Construct a [`Token`] from [`&str`],
         /// which means *Tokenizing* a *Piece*
-        ///
-        /// This method won't panic.
-        fn from(s: &str) -> Self {
+        type Error = parsing::ParseError;
+        fn try_from(s: &str) -> Result<Self, Self::Error> {
             if s.starts_with('"') && s.ends_with('"') {
-                return Token::Str(s.trim_matches('"').to_string());
+                return Ok(Token::Str(s.trim_matches('"').to_string()));
             }
-            if let Ok(r) = s.try_into() {
-                return Token::Rat(r);
+            match s.try_into() {
+                Err(rational::ParseError::NotARational) => (),
+                Err(rational::ParseError::ZeroDivision) =>   
+                    return Err(super::ParseError { msg: format!("Can't devide by zero") }),
+                Ok(r) => return Ok(Token::Rat(r))
             }
             if let Ok(float) = s.parse::<f64>() {
-                return Token::Float(float);
+                return Ok(Token::Float(float));
             }
             if s == "nil" {
-                return Token::Nil;
+                return Ok(Token::Nil);
             }
             if s == "#t" {
-                return Token::Bool(true);
+                return Ok(Token::Bool(true));
             }
             if s == "#f" {
-                return Token::Bool(false);
+                return Ok(Token::Bool(false));
             }
 
-            return Token::Word(s.to_string());
+            return Ok(Token::Word(s.to_string()));
         }
     }
 }
@@ -301,7 +306,10 @@ mod parsing {
                         if self.in_mat {
                             self.mat_buf.push(other.to_string());
                         } else {
-                            self.stack.push(TokenPairItem::Tok(other.into()));
+                            match other.try_into() {
+                                Result::Ok(tok) => self.stack.push(TokenPairItem::Tok(tok)),
+                                Result::Err(e) => return Err(e),
+                            };
                             if let Err(e) = increase_last_cnt(&mut self.cnt_stack) {
                                 return Err(e);
                             }

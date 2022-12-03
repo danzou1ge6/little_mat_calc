@@ -123,7 +123,12 @@ pub fn devide(args: ObjectPairItem, _: &mut Environment) -> Output {
         List(pair) => match (&pair.first, &pair.second) {
             (Lit(a), Lit(b)) => match (a, b) {
                 (Float(a), Float(b)) => return Ok(Lit(Float(a / b))),
-                (Rat(a), Rat(b)) => return Ok(Lit(Rat(*a / *b))),
+                (Rat(a), Rat(b)) => {
+                    if b.0 == 0 {
+                        return Err(EvalError::zero_division(format!("{}/0", a)));
+                    }
+                    return Ok(Lit(Rat(*a / *b)));
+                }
                 (a, b) => return Err(EvalError::typ(format!("Can't devide `{}` and `{}`", a, b))),
             },
             (a, b) => return Err(EvalError::typ(format!("Can't devide `{}` and `{}`", a, b))),
