@@ -1,4 +1,5 @@
 use mat::Mat;
+use std::rc::Rc;
 
 use crate::eval::{Environment, ObjectPairItem};
 
@@ -18,20 +19,20 @@ pub fn add(args: ObjectPairItem, _: &mut Environment) -> Output {
                 (Float(a), Float(b)) => return Ok(Lit(Float(a + b))),
                 (Rat(a), Rat(b)) => return Ok(Lit(Rat(*a + *b))),
                 (Matrix(MatrixWrap::Flt(a)), Matrix(MatrixWrap::Flt(b))) => {
-                    return Ok(Lit(Matrix(MatrixWrap::Flt(Box::new(a.add(b.as_ref()))))));
+                    return Ok(Lit(Matrix(MatrixWrap::Flt(Rc::new(a.add(b.as_ref()))))));
                 }
                 (Matrix(MatrixWrap::Rat(a)), Matrix(MatrixWrap::Rat(b))) => {
-                    return Ok(Lit(Matrix(MatrixWrap::Rat(Box::new(a.add(b.as_ref()))))));
+                    return Ok(Lit(Matrix(MatrixWrap::Rat(Rc::new(a.add(b.as_ref()))))));
                 }
                 (Float(a), Matrix(MatrixWrap::Flt(b))) => {
                     let mut b = b.clone_data();
                     b.scale(a);
-                    return Ok(Lit(Matrix(MatrixWrap::Flt(Box::new(b)))));
+                    return Ok(Lit(Matrix(MatrixWrap::Flt(Rc::new(b)))));
                 }
                 (Rat(a), Matrix(MatrixWrap::Rat(b))) => {
                     let mut b = b.clone_data();
                     b.scale(a);
-                    return Ok(Lit(Matrix(MatrixWrap::Rat(Box::new(b)))));
+                    return Ok(Lit(Matrix(MatrixWrap::Rat(Rc::new(b)))));
                 }
                 (a, b) => return Err(EvalError::typ(format!("Can't add {} and `{}`", a, b))),
             },
@@ -48,10 +49,10 @@ pub fn sub(args: ObjectPairItem, _: &mut Environment) -> Output {
                 (Float(a), Float(b)) => return Ok(Lit(Float(a - b))),
                 (Rat(a), Rat(b)) => return Ok(Lit(Rat(*a - *b))),
                 (Matrix(MatrixWrap::Flt(a)), Matrix(MatrixWrap::Flt(b))) => {
-                    return Ok(Lit(Matrix(MatrixWrap::Flt(Box::new(a.sub(b.as_ref()))))));
+                    return Ok(Lit(Matrix(MatrixWrap::Flt(Rc::new(a.sub(b.as_ref()))))));
                 }
                 (Matrix(MatrixWrap::Rat(a)), Matrix(MatrixWrap::Rat(b))) => {
-                    return Ok(Lit(Matrix(MatrixWrap::Rat(Box::new(a.sub(b.as_ref()))))));
+                    return Ok(Lit(Matrix(MatrixWrap::Rat(Rc::new(a.sub(b.as_ref()))))));
                 }
                 (a, b) => {
                     return Err(EvalError::typ(format!(
@@ -83,13 +84,13 @@ pub fn times(args: ObjectPairItem, _: &mut Environment) -> Output {
                 (Rat(a), Rat(b)) => return Ok(Lit(Rat(*a * *b))),
                 (Matrix(MatrixWrap::Flt(a)), Matrix(MatrixWrap::Flt(b))) => {
                     match a.dot(b.as_ref()) {
-                        Ok(r) => return Ok(Lit(Matrix(MatrixWrap::Flt(Box::new(r))))),
+                        Ok(r) => return Ok(Lit(Matrix(MatrixWrap::Flt(Rc::new(r))))),
                         Err(e) => return Err(EvalError::value(format!("{e}"))),
                     }
                 }
                 (Matrix(MatrixWrap::Rat(a)), Matrix(MatrixWrap::Rat(b))) => {
                     match a.dot(b.as_ref()) {
-                        Ok(r) => return Ok(Lit(Matrix(MatrixWrap::Rat(Box::new(r))))),
+                        Ok(r) => return Ok(Lit(Matrix(MatrixWrap::Rat(Rc::new(r))))),
                         Err(e) => return Err(EvalError::value(format!("{e}"))),
                     }
                 }
@@ -97,14 +98,14 @@ pub fn times(args: ObjectPairItem, _: &mut Environment) -> Output {
                     return Ok(Lit(Matrix(MatrixWrap::Rat({
                         let mut r = b.clone_data();
                         r.scale(a);
-                        Box::new(r)
+                        Rc::new(r)
                     }))));
                 },
                 (Float(a), Matrix(MatrixWrap::Flt(b))) => {
                     return Ok(Lit(Matrix(MatrixWrap::Flt({
                         let mut r = b.clone_data();
                         r.scale(a);
-                        Box::new(r)
+                        Rc::new(r)
                     }))));
                 },
                 (a, b) => return Err(EvalError::typ(format!("Can't times `{}` and `{}`", a, b))),

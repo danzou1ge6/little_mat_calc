@@ -18,11 +18,11 @@ use crate::mat_wrap::MatrixWrap;
 pub fn inv(args: ObjectPairItem, _: &mut Environment) -> Output {
     match args {
         Lit(Matrix(MatrixWrap::Flt(m))) => match alg::inv(&mut m.clone_data()) {
-            Ok(r) => return Ok(Lit(Matrix(MatrixWrap::Flt(Box::new(r))))),
+            Ok(r) => return Ok(Lit(Matrix(MatrixWrap::Flt(Rc::new(r))))),
             Err(e) => return Err(EvalError::value(format!("{e}"))),
         },
         Lit(Matrix(MatrixWrap::Rat(m))) => match alg::inv(&mut m.clone_data()) {
-            Ok(r) => return Ok(Lit(Matrix(MatrixWrap::Rat(Box::new(r))))),
+            Ok(r) => return Ok(Lit(Matrix(MatrixWrap::Rat(Rc::new(r))))),
             Err(e) => return Err(EvalError::value(format!("{e}"))),
         },
         Lit(Rat(r)) => return Ok(Lit(Rat(r.inv()))),
@@ -35,11 +35,11 @@ pub fn eliminate(args: ObjectPairItem, _: &mut Environment) -> Output {
     match args {
         Lit(Matrix(MatrixWrap::Flt(m))) => {
             let r = m.clone_data().eliminated();
-            return Ok(Lit(Matrix(MatrixWrap::Flt(Box::new(r)))));
+            return Ok(Lit(Matrix(MatrixWrap::Flt(Rc::new(r)))));
         }
         Lit(Matrix(MatrixWrap::Rat(m))) => {
             let r = m.clone_data().eliminated();
-            return Ok(Lit(Matrix(MatrixWrap::Rat(Box::new(r)))));
+            return Ok(Lit(Matrix(MatrixWrap::Rat(Rc::new(r)))));
         }
         _ => return Err(EvalError::typ(format!("Can only eliminate a matrix"))),
     }
@@ -54,11 +54,11 @@ pub fn reduce(args: ObjectPairItem, _: &mut Environment) -> Output {
         }
         Lit(Matrix(MatrixWrap::Flt(m))) => {
             let r = m.clone_data().eliminated().reduced();
-            return Ok(Lit(Matrix(MatrixWrap::Flt(Box::new(r)))));
+            return Ok(Lit(Matrix(MatrixWrap::Flt(Rc::new(r)))));
         }
         Lit(Matrix(MatrixWrap::Rat(m))) => {
             let r = m.clone_data().eliminated().reduced();
-            return Ok(Lit(Matrix(MatrixWrap::Rat(Box::new(r)))));
+            return Ok(Lit(Matrix(MatrixWrap::Rat(Rc::new(r)))));
         }
         _ => return Err(EvalError::typ(format!("Can only eliminate a matrix"))),
     }
@@ -113,11 +113,11 @@ pub fn solve(args: ObjectPairItem, _: &mut Environment) -> Output {
                     .map_err(|e| EvalError::value(format!("{e}")))?;
                 match r {
                     SolveResult::None => return Ok(Lit(Nil)),
-                    SolveResult::Single(s) => return Ok(Lit(Matrix(MatrixWrap::Flt(Box::new(s))))),
+                    SolveResult::Single(s) => return Ok(Lit(Matrix(MatrixWrap::Flt(Rc::new(s))))),
                     SolveResult::Infinite { general, special } => {
                         return Ok(List(Rc::new(ObjectPair {
-                            first: Lit(Matrix(MatrixWrap::Flt(Box::new(general)))),
-                            second: Lit(Matrix(MatrixWrap::Flt(Box::new(special)))),
+                            first: Lit(Matrix(MatrixWrap::Flt(Rc::new(general)))),
+                            second: Lit(Matrix(MatrixWrap::Flt(Rc::new(special)))),
                         })));
                     }
                 }
@@ -127,11 +127,11 @@ pub fn solve(args: ObjectPairItem, _: &mut Environment) -> Output {
                     .map_err(|e| EvalError::value(format!("{e}")))?;
                 match r {
                     SolveResult::None => return Ok(Lit(Nil)),
-                    SolveResult::Single(s) => return Ok(Lit(Matrix(MatrixWrap::Rat(Box::new(s))))),
+                    SolveResult::Single(s) => return Ok(Lit(Matrix(MatrixWrap::Rat(Rc::new(s))))),
                     SolveResult::Infinite { general, special } => {
                         return Ok(List(Rc::new(ObjectPair {
-                            first: Lit(Matrix(MatrixWrap::Rat(Box::new(general)))),
-                            second: Lit(Matrix(MatrixWrap::Rat(Box::new(special)))),
+                            first: Lit(Matrix(MatrixWrap::Rat(Rc::new(general)))),
+                            second: Lit(Matrix(MatrixWrap::Rat(Rc::new(special)))),
                         })));
                     }
                 }
@@ -154,12 +154,12 @@ pub fn solve(args: ObjectPairItem, _: &mut Environment) -> Output {
 pub fn transposed(args: ObjectPairItem, _: &mut Environment) -> Output {
     match args {
         Lit(Matrix(MatrixWrap::Flt(m))) => {
-            return Ok(Lit(Matrix(MatrixWrap::Flt(Box::new(
+            return Ok(Lit(Matrix(MatrixWrap::Flt(Rc::new(
                 m.clone_data().transposed(),
             )))));
         }
         Lit(Matrix(MatrixWrap::Rat(m))) => {
-            return Ok(Lit(Matrix(MatrixWrap::Rat(Box::new(
+            return Ok(Lit(Matrix(MatrixWrap::Rat(Rc::new(
                 m.clone_data().transposed(),
             )))));
         }
@@ -191,14 +191,14 @@ pub fn null_space(args: ObjectPairItem, _: &mut Environment) -> Output {
     match args {
         Lit(Matrix(MatrixWrap::Flt(m))) => {
             if let Some(ns) = m.clone_data().eliminated().null_space() {
-                return Ok(Lit(Matrix(MatrixWrap::Flt(Box::new(ns)))));
+                return Ok(Lit(Matrix(MatrixWrap::Flt(Rc::new(ns)))));
             } else {
                 return Ok(Lit(Nil));
             }
         }
         Lit(Matrix(MatrixWrap::Rat(m))) => {
             if let Some(ns) = m.clone_data().eliminated().null_space() {
-                return Ok(Lit(Matrix(MatrixWrap::Rat(Box::new(ns)))));
+                return Ok(Lit(Matrix(MatrixWrap::Rat(Rc::new(ns)))));
             } else {
                 return Ok(Lit(Nil));
             }
@@ -219,7 +219,7 @@ pub fn ridentity(args: ObjectPairItem, _: &mut Environment) -> Output {
                     "Need an positive integer, not a fraction".to_string(),
                 ));
             } else {
-                return Ok(Lit(Matrix(MatrixWrap::Rat(Box::new(
+                return Ok(Lit(Matrix(MatrixWrap::Rat(Rc::new(
                     DataMatrix::identity(r.0.try_into().unwrap()),
                 )))));
             }
@@ -240,16 +240,31 @@ pub fn concat(args: ObjectPairItem, _: &mut Environment) -> Output {
                     let mut mt_data = Vec::with_capacity(t.data.len());
                     for o in t.data.into_iter() {
                         match o {
-                            Lit(MatrixWrap::Flt(m)) => mt_data.push(m),
+                            Lit(Matrix(MatrixWrap::Flt(m))) => mt_data.push(m),
                             _ => return Err(EvalError::typ(format!("Can only concat matrix with same type of matrix (rational or float)")))
                         }
                     }
                     let concated = ConcatedMatrix::new(
-                        
-                    )
+                        mt_data.iter().map(|x| x.as_ref()).collect(),
+                        t.rows,
+                        t.cols
+                    ).map_err(|e| EvalError::value(format!("{e}")))?;
+                    return Ok(Lit(Matrix(MatrixWrap::Flt(Rc::new(concated)))))
                 },
                 Lit(Matrix(MatrixWrap::Rat(_))) => {
-
+                    let mut mt_data = Vec::with_capacity(t.data.len());
+                    for o in t.data.into_iter() {
+                        match o {
+                            Lit(Matrix(MatrixWrap::Flt(m))) => mt_data.push(m),
+                            _ => return Err(EvalError::typ(format!("Can only concat matrix with same type of matrix (rational or float)")))
+                        }
+                    }
+                    let concated = ConcatedMatrix::new(
+                        mt_data.iter().map(|x| x.as_ref()).collect(),
+                        t.rows,
+                        t.cols
+                    ).map_err(|e| EvalError::value(format!("{e}")))?;
+                    return Ok(Lit(Matrix(MatrixWrap::Rat(Rc::new(concated)))))
                 },
                 _ => return Err(EvalError::typ(format!("Can only concat matrixes")))
             }

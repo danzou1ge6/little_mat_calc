@@ -1,12 +1,14 @@
 use mat::{DataMatrix, Mat, Rational};
+use std::rc::Rc;
+use std::cell::RefCell;
 use crate::{table::Table};
 
 /// Wrap two types of matrix: [`Rational`] and [`f64`] , and also the symbol table [`Table<Token>`]
 /// These are the only two types supported
 #[derive(Debug)]
 pub enum MatrixWrap {
-    Rat(Box<dyn Mat<Item = Rational>>),
-    Flt(Box<dyn Mat<Item = f64>>),
+    Rat(Rc<RefCell<dyn Mat<Item = Rational>>>),
+    Flt(Rc<RefCell<dyn Mat<Item = f64>>>),
 }
 
 pub enum MatrixOrTable {
@@ -33,8 +35,8 @@ impl MatrixOrTable {
 impl Clone for MatrixWrap {
     fn clone(&self) -> Self {
         match self {
-            MatrixWrap::Flt(m) => MatrixWrap::Flt(Box::new(m.clone_data())),
-            MatrixWrap::Rat(m) => MatrixWrap::Rat(Box::new(m.clone_data())),
+            MatrixWrap::Flt(m) => MatrixWrap::Flt(Rc::new(RefCell::new(m.borrow().clone_data()))),
+            MatrixWrap::Rat(m) => MatrixWrap::Rat(Rc::new(RefCell::new(m.borrow().clone_data()))),
         }
     }
 }
@@ -131,13 +133,13 @@ impl TryInto<MatrixOrTable> for &mut dyn Iterator<Item = &str> {
 
         match parsing_mode {
             ParsingMode::Float => 
-                return Ok(MatrixOrTable::Matrix(MatrixWrap::Flt(Box::new(
+                return Ok(MatrixOrTable::Matrix(MatrixWrap::Flt(Rc::new(RefCell::new(
                     DataMatrix::new(floats, rows, cols).unwrap(),
-                )))),
+                ))))),
             ParsingMode::Rational => 
-                return Ok(MatrixOrTable::Matrix(MatrixWrap::Rat(Box::new(
+                return Ok(MatrixOrTable::Matrix(MatrixWrap::Rat(Rc::new(RefCell::new(
                     DataMatrix::new(rats, rows, cols).unwrap(),
-                )))),
+                ))))),
             ParsingMode::Symbol => {
                 return Ok(MatrixOrTable::Table(Table::new(
                     words, rows, cols
