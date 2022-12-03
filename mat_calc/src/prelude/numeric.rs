@@ -1,3 +1,4 @@
+use mat::DataMatrix;
 use mat::Mat;
 use std::rc::Rc;
 
@@ -204,30 +205,16 @@ pub fn and(args: ObjectPairItem, _: &mut Environment) -> Output {
     }
 }
 
-pub fn log(args: ObjectPairItem, _: &mut Environment) -> Output {
+pub fn to_float(args: ObjectPairItem, _: &mut Environment) -> Output {
     match args {
-        List(pair) => match (&pair.first, &pair.second) {
-            (Lit(a), Lit(b)) => match (a, b) {
-                (Float(a), Float(b)) => {
-                    if let Ok(a) = (*a).try_into() {
-                        return Ok(Lit(Float(b.log(a))));
-                    } else {
-                        return Err(EvalError::value(format!(
-                            "Exponent can't be negative: {}",
-                            b
-                        )));
-                    }
-                }
-                (a, b) => {
-                    return Err(EvalError::value(format!(
-                        "Can't log `{}` and `{}`, must be floats",
-                        a, b
-                    )))
-                }
-            },
-            (a, b) => return Err(EvalError::value(format!("Can't log `{}` and `{}`", a, b))),
+        Lit(Rat(x)) => {
+            return Ok(Lit(Float(x.into())))
         },
-        _ => return Err(EvalError::syntax("You can only 'log' a Pair".to_string())),
+        Lit(Matrix(MatrixWrap::Rat(m))) => {
+            let m: DataMatrix<f64> = m.clone_data().convert();
+            return Ok(Lit(Matrix(MatrixWrap::Flt(Rc::new(m)))));
+        }
+        other => return Err(EvalError::typ(format!("Can only convert rational or rational matrix to float, not {}", other)))
     }
 }
 
@@ -241,5 +228,5 @@ pub const EXPORTS: [ExportType; 10] = [
     ("=", 2, &eq),
     ("&", 2, &and),
     ("|", 2, &or),
-    ("log", 2, &log),
+    ("tofloat", 1, &to_float),
 ];

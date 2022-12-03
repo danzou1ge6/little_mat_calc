@@ -1,6 +1,8 @@
 use crate::eval::{Environment, ObjectPairItem};
+use mat::error::MatError;
 use mat::alg;
 use mat::alg::SolveResult;
+use mat::element::LinearElem;
 use mat::element::RefInv;
 use mat::DataMatrix;
 use mat::ConcatedMatrix;
@@ -138,7 +140,7 @@ pub fn solve(args: ObjectPairItem, _: &mut Environment) -> Output {
             }
             (a, b) => {
                 return Err(EvalError::syntax(format!(
-                    "Need two matrixes to solve, found {} and {}",
+                    "Need two matrixes of same type to solve, found {} and {}",
                     a, b
                 )))
             }
@@ -151,7 +153,7 @@ pub fn solve(args: ObjectPairItem, _: &mut Environment) -> Output {
     }
 }
 
-pub fn transposed(args: ObjectPairItem, _: &mut Environment) -> Output {
+pub fn transpose(args: ObjectPairItem, _: &mut Environment) -> Output {
     match args {
         Lit(Matrix(MatrixWrap::Flt(m))) => {
             return Ok(Lit(Matrix(MatrixWrap::Flt(Rc::new(
@@ -228,6 +230,15 @@ pub fn ridentity(args: ObjectPairItem, _: &mut Environment) -> Output {
     }
 }
 
+
+fn clone_concated<T>(data: Vec<&dyn Mat<Item=T>>, rows: usize, cols: usize) -> Result<DataMatrix<T>, MatError> where T: LinearElem {
+    let mut_data = unsafe {
+        data.into_iter().map(|x| &mut *(x as *const dyn Mat<Item=_> as *mut dyn Mat<Item=_>) as &mut dyn Mat<Item=_>).collect()
+    };
+    let concated = ConcatedMatrix::new(mut_data, rows, cols)?;
+    return Ok(concated.clone_data())
+}
+
 pub fn concat(args: ObjectPairItem, _: &mut Environment) -> Output {
     match args {
         Lit(Table(t)) => {
@@ -238,32 +249,24 @@ pub fn concat(args: ObjectPairItem, _: &mut Environment) -> Output {
             match t.data[0] {
                 Lit(Matrix(MatrixWrap::Flt(_))) => {
                     let mut mt_data = Vec::with_capacity(t.data.len());
-                    for o in t.data.into_iter() {
+                    for o in t.data.iter() {
                         match o {
-                            Lit(Matrix(MatrixWrap::Flt(m))) => mt_data.push(m),
+                            Lit(Matrix(MatrixWrap::Flt(m))) => mt_data.push(m.as_ref()),
                             _ => return Err(EvalError::typ(format!("Can only concat matrix with same type of matrix (rational or float)")))
                         }
                     }
-                    let concated = ConcatedMatrix::new(
-                        mt_data.iter().map(|x| x.as_ref()).collect(),
-                        t.rows,
-                        t.cols
-                    ).map_err(|e| EvalError::value(format!("{e}")))?;
+                    let concated = clone_concated(mt_data, t.rows, t.cols).map_err(|e| EvalError::value(format!("{e}")))?;
                     return Ok(Lit(Matrix(MatrixWrap::Flt(Rc::new(concated)))))
                 },
                 Lit(Matrix(MatrixWrap::Rat(_))) => {
                     let mut mt_data = Vec::with_capacity(t.data.len());
-                    for o in t.data.into_iter() {
+                    for o in t.data.iter() {
                         match o {
-                            Lit(Matrix(MatrixWrap::Flt(m))) => mt_data.push(m),
+                            Lit(Matrix(MatrixWrap::Rat(m))) => mt_data.push(m.as_ref()),
                             _ => return Err(EvalError::typ(format!("Can only concat matrix with same type of matrix (rational or float)")))
                         }
                     }
-                    let concated = ConcatedMatrix::new(
-                        mt_data.iter().map(|x| x.as_ref()).collect(),
-                        t.rows,
-                        t.cols
-                    ).map_err(|e| EvalError::value(format!("{e}")))?;
+                    let concated = clone_concated(mt_data, t.rows, t.cols).map_err(|e| EvalError::value(format!("{e}")))?;
                     return Ok(Lit(Matrix(MatrixWrap::Rat(Rc::new(concated)))))
                 },
                 _ => return Err(EvalError::typ(format!("Can only concat matrixes")))
@@ -275,15 +278,16 @@ pub fn concat(args: ObjectPairItem, _: &mut Environment) -> Output {
 }
 
 
-pub const EXPORTS: [ExportType; 10  ] = [
+pub const EXPORTS: [ExportType; 11] = [
     ("inv", 1, &inv),
     ("eliminate", 1, &eliminate),
     ("rank", 1, &rank),
     ("reduce", 1, &reduce),
     ("det", 1, &det),
     ("solve", 2, &solve),
-    ("transposed", 1, &transposed),
+    ("transpose", 1, &transpose),
     ("trace", 1, &trace),
     ("nullspace", 1, &null_space),
     ("ridentity", 1, &ridentity),
+    ("concat", 1, &concat),
 ];
