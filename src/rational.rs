@@ -115,6 +115,9 @@ impl Div for Rational {
     type Output = Self;
 
     fn div(self, rhs: Self) -> Self::Output {
+        if rhs.0 == 0 {
+            panic!("Devided by zero");
+        }
         self.mul(rhs.inv())
     }
 }
@@ -252,19 +255,31 @@ mod test {
     }
 }
 
-impl TryInto<Rational> for &str {
-    type Error = ();
-    fn try_into(self) -> Result<Rational, Self::Error> {
-        if let Some(idx) = self.find('/') {
-            let (p, mut q) = self.split_at(idx);
-            q = &q[1..];
-            if let (Ok(p), Ok(q)) = (p.parse(), q.parse()) {
-                return Ok(Rational::new(p, q));
-            }
-        }
-        if let Ok(int) = self.parse::<i32>() {
-            return Ok(Rational::from(int));
-        }
-        return Err(());
+mod from_str {
+    use super::*;
+
+    pub enum ParseError {
+        ZeroDivision,
+        NotARational,
     }
+
+    impl TryInto<Rational> for &str {
+        type Error = ParseError;
+        fn try_into(self) -> Result<Rational, Self::Error> {
+            if let Some(idx) = self.find('/') {
+                let (p, mut q) = self.split_at(idx);
+                q = &q[1..];
+                if let (Ok(p), Ok(q)) = (p.parse(), q.parse()) {
+                    if q == 0 { return Err(ParseError::ZeroDivision) }
+                    return Ok(Rational::new(p, q));
+                }
+            }
+            if let Ok(int) = self.parse::<i32>() {
+                return Ok(Rational::from(int));
+            }
+            return Err(ParseError::NotARational);
+        }
+    }
+
 }
+pub use from_str::ParseError;
