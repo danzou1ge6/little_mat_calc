@@ -161,7 +161,7 @@ impl Environment {
                     let first = self.eval(pair.first)?;
                     let second = self.eval_n_times(pair.second, n - 1)?;
 
-                    return Ok(ObjectPairItem::List(Rc::new(ObjectPair {
+                    return Ok(ObjectPairItem::List(Box::new(ObjectPair {
                         first, second
                     })));
                 }
@@ -337,7 +337,7 @@ impl Environment {
                     BuiltinFunc(bfunc) => 
                         return self.apply_builtin_func(&bfunc, pair.second.clone()),
                 
-                    _ => return Ok(List(Rc::new(ObjectPair { first, second: self.eval(pair.second)? }))),
+                    _ => return Ok(List(Box::new(ObjectPair { first, second: self.eval(pair.second)? }))),
                 }
             }
         }

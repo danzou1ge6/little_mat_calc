@@ -118,7 +118,7 @@ pub fn solve(args: ObjectPairItem, _: &mut Environment) -> Output {
                     SolveResult::None => return Ok(Lit(Nil)),
                     SolveResult::Single(s) => return Ok(Lit(Matrix(MatrixWrap::Flt(Rc::new(s))))),
                     SolveResult::Infinite { general, special } => {
-                        return Ok(List(Rc::new(ObjectPair {
+                        return Ok(List(Box::new(ObjectPair {
                             first: Lit(Matrix(MatrixWrap::Flt(Rc::new(general)))),
                             second: Lit(Matrix(MatrixWrap::Flt(Rc::new(special)))),
                         })));
@@ -132,7 +132,7 @@ pub fn solve(args: ObjectPairItem, _: &mut Environment) -> Output {
                     SolveResult::None => return Ok(Lit(Nil)),
                     SolveResult::Single(s) => return Ok(Lit(Matrix(MatrixWrap::Rat(Rc::new(s))))),
                     SolveResult::Infinite { general, special } => {
-                        return Ok(List(Rc::new(ObjectPair {
+                        return Ok(List(Box::new(ObjectPair {
                             first: Lit(Matrix(MatrixWrap::Rat(Rc::new(general)))),
                             second: Lit(Matrix(MatrixWrap::Rat(Rc::new(special)))),
                         })));
@@ -278,8 +278,41 @@ pub fn concat(args: ObjectPairItem, _: &mut Environment) -> Output {
     }
 }
 
+pub fn get(args: ObjectPairItem, _: &mut Environment) -> Output {
+    match args {
+        List( box ObjectPair { 
+            first: Lit(Matrix(MatrixWrap::Flt(m))),
+            second: List(box ObjectPair { first: Lit(Rat(i)), second: Lit(Rat(j)) }) 
+        }) => {
+            if i.1 != 1 || j.1 != 1 {
+                return Err(EvalError::value(format!("Can only index into matrix by integers")));
+            }
+            if let (Ok(ui), Ok(uj)) = (i.0.try_into(), j.0.try_into()) {
+                return Ok(Lit(Float(*m.get(ui, uj).map_err(|e| EvalError::value(format!("{e}")))?)));
+            } else {
+                return Err(EvalError::value(format!("Bad index")));
+            }
+        },
+        List( box ObjectPair { 
+            first: Lit(Matrix(MatrixWrap::Rat(m))),
+            second: List(box ObjectPair { first: Lit(Rat(i)), second: Lit(Rat(j)) }) 
+        }) => {
+            if i.1 != 1 || j.1 != 1 {
+                return Err(EvalError::value(format!("Can only index into matrix by integers")));
+            }
+            if let (Ok(ui), Ok(uj)) = (i.0.try_into(), j.0.try_into()) {
+                return Ok(Lit(Rat(*m.get(ui, uj).map_err(|e| EvalError::value(format!("{e}")))?)));
+            } else {
+                return Err(EvalError::value(format!("Bad index")));
+            }
+        },
+        _ => return Err(EvalError::syntax(format!("Can only apply `get` on matrixe and indices must be integers")))
 
-pub const EXPORTS: [BuiltinFunction; 11] = [
+    }
+}
+
+
+pub const EXPORTS: [BuiltinFunction; 12] = [
     BuiltinFunction {
         f: &inv,
         argn: 1,
@@ -362,6 +395,15 @@ pub const EXPORTS: [BuiltinFunction; 11] = [
             Usage: (concat t: table)
             Concat matrixes in the partition defined by `t`.
             `t` can be, for example, `[a b;]`, which join `b` to the right of `a`.
+        "}
+    },
+    BuiltinFunction {
+        f: &get,
+        name: "get",
+        argn: 3,
+        help: indoc! {"
+            Usage: (get m: matrix i: rational j: rational)
+            Get the `(i, j)` element of matrix `m`.
         "}
     }
 ];

@@ -1,4 +1,4 @@
-use crate::eval::{EvalError, Frame, ObjectPairItem};
+use crate::eval::{EvalError, Frame, ObjectPairItem, BuiltinFunction};
 
 use indoc::indoc;
 use std::rc::Rc;
@@ -11,14 +11,17 @@ mod list;
 mod matrix;
 mod numeric;
 
-/// Inject all builtin functions in to `frame`, which is the root frame
-pub fn inject_builtins(frame: &mut Frame) {
-    for func in numeric::EXPORTS
-        .into_iter()
+pub fn all_builtins() -> impl Iterator<Item=BuiltinFunction> {
+    numeric::EXPORTS.into_iter()
         .chain(list::EXPORTS.into_iter())
         .chain(matrix::EXPORTS.into_iter())
+        .chain(matrix::EXPORTS.into_iter())
         .chain(misc::EXPORTS.into_iter())
-    {
+}
+
+/// Inject all builtin functions in to `frame`, which is the root frame
+pub fn inject_builtins(frame: &mut Frame) {
+    for func in all_builtins() {
         frame.insert(
             func.name.to_string(),
             ObjectPairItem::BuiltinFunc(Rc::new(func)),

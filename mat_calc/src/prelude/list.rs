@@ -7,7 +7,6 @@ use crate::eval::EvalError;
 use crate::eval::Literal::*;
 use crate::eval::ObjectPairItem::*;
 
-use std::rc::Rc;
 
 /// Get the first element of a scheme pair
 pub fn car(args: ObjectPairItem, _: &mut Environment) -> Output {
@@ -42,14 +41,14 @@ pub fn con(args: ObjectPairItem, _: &mut Environment) -> Output {
             let list = ObjectPair {
                 first: pair.first.clone(),
                 second: match pair.second {
-                    List(_) => pair.second.clone(),
-                    _ => List(Rc::new(ObjectPair {
-                        first: pair.second.clone(),
+                    List(_) => pair.second,
+                    _ => List(Box::new(ObjectPair {
+                        first: pair.second,
                         second: Lit(Nil),
                     })),
                 },
             };
-            return Ok(List(Rc::new(list)));
+            return Ok(List(Box::new(list)));
         }
         _ => {
             return Err(EvalError::syntax(

@@ -64,11 +64,12 @@ pub enum ObjectPairItem {
     /// Literal value, eg 1, 'a', #f, nil
     Lit(Literal),
     /// Pair, which is usually used for lists, eg (1 (2 (3 nil)))
-    List(Rc<ObjectPair>),
+    List(Box<ObjectPair>),
     Func(Rc<Function>),
     BuiltinFunc(Rc<BuiltinFunction>),
 }
 
+#[derive(Clone)]
 /// Represents a scheme pair which is pair
 pub struct ObjectPair {
     pub first: ObjectPairItem,
@@ -79,12 +80,12 @@ impl ObjectPairItem {
     pub fn make_list(mut v: Vec<ObjectPairItem>) -> Self {
         if v.len() == 1 {
             return ObjectPairItem::List(
-                Rc::new(ObjectPair { first: v.pop().unwrap(), second: ObjectPairItem::Lit(Literal::Nil) })
+                Box::new(ObjectPair { first: v.pop().unwrap(), second: ObjectPairItem::Lit(Literal::Nil) })
             );
         }
         let item = v.pop().unwrap();
         return ObjectPairItem::List(
-            Rc::new(ObjectPair { first: item, second: ObjectPairItem::make_list(v) })
+            Box::new(ObjectPair { first: item, second: ObjectPairItem::make_list(v) })
         );
     }
 }
