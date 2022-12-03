@@ -19,6 +19,11 @@ fn startup_text() -> String {
     )
 }
 
+const STANDBY_PROMPT: &str = "> ";
+const PENDING_PROMPT: &str = ". ";
+const ERROR_PROMPT: &str = "! ";
+const RESULT_PROMPT: &str = "=> ";
+
 const HELP_TEXT: &str = indoc! {"
 AVAILABLE INTEREPTER COMMANDS
     - `.quit` exits the interepter
@@ -41,48 +46,52 @@ fn strip_anno_lines(src: String) -> String {
     src.lines().filter(|line| !line.starts_with('#')).collect()
 }
 
+fn evalf(path: &str, intp: &mut Interpreter) -> Result<(), String> {
+    let mut file = File::open(path)
+        .map_err(|e| format!("Can't open file: {e}"))?;
+
+    let mut src = Vec::new();
+    file.read_to_end(&mut src)
+        .map_err(|e| format!("Can't read file: {e}"))?;
+    let src = String::from_utf8(src)
+        .map_err(|e| format!("Not valid utf-8 file: {}", e))?;
+
+    let src = strip_anno_lines(src);
+    interpreter_eval_and_prin(intp, &src);
+
+    Ok(())
+}
+
 /// Run a .x command
-fn command(cmd: &str, intp: &mut Interpreter) {
+fn command(cmd: &str, intp: &mut Interpreter) -> Result<(), String> {
     if cmd == ".quit" {
         exit(0);
+
     } else if cmd.starts_with(".evalf ") {
-        match File::open(cmd.trim_start_matches(".evalf ")) {
-            Ok(mut file) => {
-                let mut src = Vec::new();
-                match file.read_to_end(&mut src) {
-                    Ok(_) => {
-                        if let Ok(src) = String::from_utf8(src) {
-                            interpreter_eval_and_prin(intp, &strip_anno_lines(src));
-                        } else {
-                            println!("File is not valid utf-8 encoded source code");
-                        }
-                    }
-                    Err(e) => println!("{e}"),
-                }
-            }
-            Err(e) => println!("{e}"),
-        }
+        let path = cmd.trim_start_matches(".evalf ");
+        return evalf(path, intp);
+
     } else if cmd == ".help" {
         println!("{HELP_TEXT}");
-        print!("> ");
+        return Ok(());
+
     } else {
-        println!("No such command. Type .help for help");
-        print!("> ");
+        return Err("No such command. Type .help for help".to_string());
     }
 }
 
 fn interpreter_eval_and_prin<'a>(intp: &'a mut Interpreter, src: &'a str) {
     match intp.eval_line(src) {
         PendingResult::Pending => {
-            print!(". ");
+            print!("{}", PENDING_PROMPT);
         }
         PendingResult::Ok(obj) => {
-            println!("=> {}", obj);
-            print!("> ");
+            println!("{}{}", RESULT_PROMPT, obj);
+            print!("{}", STANDBY_PROMPT);
         }
         PendingResult::Err(err) => {
-            println!("! {}", err);
-            print!("> ");
+            println!("{}{}", ERROR_PROMPT, err);
+            print!("{}", STANDBY_PROMPT);
         }
     }
 }
@@ -98,14 +107,18 @@ fn interpreter_loop(intp: &mut Interpreter) {
         let line = line.trim();
 
         if line.starts_with('.') {
-            command(line, intp);
-            continue;
+            match command(line, intp) {
+                Ok(_) => print!("{STANDBY_PROMPT}"),
+                Err(s) => print!("{}{}\n{}", ERROR_PROMPT, s, STANDBY_PROMPT),
+            }
+        } else {
+            interpreter_eval_and_prin(intp, line);
         }
 
-        interpreter_eval_and_prin(intp, line);
     }
 }
-fn main() {
+
+fn app_main() {
     let config = Config {
         trace_back: false,
         max_recursion: 1000,
@@ -114,4 +127,13 @@ fn main() {
 
     println!("{}", startup_text());
     interpreter_loop(&mut intp);
+}
+
+fn main() {
+    use std::thread::Builder;
+    let handler = Builder::new()
+        .stack_size(20 * 1024 * 1024)
+        .spawn(app_main)
+        .unwrap();
+    handler.join().unwrap();
 }
