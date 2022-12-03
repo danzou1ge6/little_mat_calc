@@ -406,7 +406,7 @@ pub const EXPORTS: [BuiltinFunction; 12] = [
     BuiltinFunction {
         f: &null_space,
         argn: 1,
-        name: "trace",
+        name: "nullspace",
         help: indoc! {"
             Usage: (nullspace x: matrix) -> nil | matrix
             Calculates the null space of a matrix, returning

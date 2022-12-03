@@ -177,18 +177,20 @@ where
 
                 for pivot in pivot_vars.iter().rev() {
                     let sol_slice =
-                        SliceMatrix::new_unchecked(&sol, pivot + 1, self.cols() - pivot, 0, 1);
+                        SliceMatrix::new_unchecked(&sol, pivot + 1, self.cols() - pivot - 1, 0, 1);
                     let coef_slice = SliceMatrix::new_unchecked(
                         self,
                         self.pivot_rows.get_unchecked(*pivot).unwrap(),
                         1,
                         pivot + 1,
-                        self.cols() - pivot,
+                        self.cols() - pivot - 1,
                     );
 
                     let neg_pivot_val = coef_slice.dot_unchecked(&sol_slice);
                     let neg_pivot_val = neg_pivot_val.get_unchecked(0, 0);
-                    *sol.get_mut_unchecked(*pivot, 0) = T::add_zero().ref_sub(neg_pivot_val);
+                    *sol.get_mut_unchecked(*pivot, 0) = T::add_zero()
+                        .ref_sub(neg_pivot_val)
+                        .ref_mul(&self.get_unchecked(self.pivot_rows.get_unchecked(*pivot).unwrap(), *pivot).inv());
                 }
 
                 result.col_unchecked(i).add_assign_unchecked(&sol);
@@ -214,13 +216,15 @@ where
                     }
                     Some(pivot) => {
                         let sol_slice =
-                            SliceMatrix::new_unchecked(&sol, pivot + 1, self.cols() - pivot, 0, 1);
+                            SliceMatrix::new_unchecked(&sol, pivot + 1, self.cols() - pivot - 1, 0, 1);
                         let coef_slice =
-                            SliceMatrix::new_unchecked(self, i, 1, pivot + 1, self.cols() - pivot);
+                            SliceMatrix::new_unchecked(self, i, 1, pivot + 1, self.cols() - pivot - 1);
 
                         let tmp = coef_slice.dot_unchecked(&sol_slice);
                         let tmp = tmp.get_unchecked(0, 0);
-                        *sol.get_mut_unchecked(*pivot, 0) = b.get_unchecked(i, 0).ref_sub(tmp)
+                        *sol.get_mut_unchecked(*pivot, 0) = b.get_unchecked(i, 0)
+                            .ref_sub(tmp)
+                            .ref_mul(&self.get_unchecked(i, *pivot).inv());
                     }
                 }
             }
@@ -422,11 +426,11 @@ mod test {
 
     #[test]
     fn test_null_space() {
-        let a: DataMatrix<i32> = mat_![
+        let a: DataMatrix<Rational> = mat_![
             1 2 1 4;
-            0 1 3 1;
+            0 2 6 2;
             0 0 0 0;
-        ];
+        ].convert();
         let b = a.eliminated();
         let n = b.null_space().unwrap();
 
@@ -437,23 +441,23 @@ mod test {
                 -1 -3;
                  0  1;
                  1  0;
-            ]
+            ].convert()
         );
     }
 
     #[test]
     fn test_special_solution() {
-        let a: DataMatrix<i32> = mat_![
+        let a: DataMatrix<Rational> = mat_![
             1 2 1 4;
             0 1 3 1;
             0 0 0 0;
-        ];
+        ].convert();
         let a = a.eliminated();
-        let b: DataMatrix<i32> = mat_![
+        let b: DataMatrix<Rational> = mat_![
             1;
             2;
             0;
-        ];
+        ].convert();
 
         let special_solution = a.special_solution(&b).unwrap();
         assert_eq!(
@@ -463,7 +467,7 @@ mod test {
                 2;
                 0;
                 0;
-            ]
+            ].convert()
         );
     }
 }

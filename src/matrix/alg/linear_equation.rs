@@ -61,7 +61,9 @@ where
         None => SolveResult::None,
         Some(special) => match coef_slice.null_space() {
             None => SolveResult::Single(special),
-            Some(general) => SolveResult::Infinite { general, special },
+            Some(general) => {
+                SolveResult::Infinite { general, special }
+            },
         },
     }
 }
@@ -89,6 +91,8 @@ where
 
 #[cfg(test)]
 mod test {
+    use crate::Rational;
+
     use super::*;
     use mat_macro::mat_;
 
@@ -138,22 +142,54 @@ mod test {
 
     #[test]
     fn test_infinite() {
-        let mut a = mat_![
+        let mut a: DataMatrix<Rational> = mat_![
             1 2 1;
             0 1 1;
-        ];
-        let mut b = mat_![
+        ].convert();
+        let mut b: DataMatrix<Rational> = mat_![
             1;
             1;
-        ];
+        ].convert();
 
         use SolveResult::*;
         match solve(&mut a, &mut b).unwrap() {
             None => panic!("No solution"),
             Single(_) => panic!("Got single solution"),
             Infinite { general, special } => {
-                assert_eq!(general, mat_![ 1; -1; 1; ]);
-                assert_eq!(special, mat_![ -1; 1; 0; ]);
+                assert_eq!(general, mat_![ 1; -1; 1; ].convert());
+                assert_eq!(special, mat_![ -1; 1; 0; ].convert());
+            }
+        }
+    }
+
+    #[test]
+    fn test_infinite2() {
+        let mut a: DataMatrix<Rational> = mat_![3 4 5; 9 3 2;].convert();
+        let mut b: DataMatrix<Rational> = mat_![1; 4;].convert();
+        
+        use SolveResult::*;
+        match solve(&mut a, &mut b).unwrap() {
+            None => panic!("No solution"),
+            Single(_) => panic!("Got single solution"),
+            Infinite { general, special } => {
+                assert_eq!(special, mat_![ (Rational(13, 27)); (Rational(-1, 9)); (Rational(0, 1)); ]);
+                assert_eq!(general, mat_![ (Rational(7, 27)); (Rational(-13, 9)); (Rational(1, 1)); ]);
+            }
+        }
+    }
+
+    #[test]
+    fn test_infinite3() {
+        let mut a: DataMatrix<Rational> = mat_![3 4 5; 9 3 2; 12 7 7;].convert();
+        let mut b: DataMatrix<Rational> = mat_![1; 4; 5;].convert();
+        
+        use SolveResult::*;
+        match solve(&mut a, &mut b).unwrap() {
+            None => panic!("No solution"),
+            Single(_) => panic!("Got single solution"),
+            Infinite { general, special } => {
+                assert_eq!(special, mat_![ (Rational(13, 27)); (Rational(-1, 9)); (Rational(0, 1)); ]);
+                assert_eq!(general, mat_![ (Rational(7, 27)); (Rational(-13, 9)); (Rational(1, 1)); ]);
             }
         }
     }
