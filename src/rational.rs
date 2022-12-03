@@ -109,10 +109,10 @@ impl Div for Rational {
     }
 }
 
-impl Into<f64> for Rational {
-    fn into(self) -> f64 {
-        let p: f64 = self.0.into();
-        let q: f64 = self.1.into();
+impl From<Rational> for f64 {
+    fn from(value: Rational) -> Self {
+        let p: f64 = value.0.into();
+        let q: f64 = value.1.into();
         p / q
     }
 }
