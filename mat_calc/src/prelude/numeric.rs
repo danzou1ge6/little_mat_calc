@@ -231,8 +231,7 @@ pub const EXPORTS: [BuiltinFunction; 10] = [
             Usage: (+ a b) -> type(a)
             Add two numbers or two matrixes. They must have same kind of data type, rational or float.
             The latter matrix is truncated if it's larger, or is repeated by columns and rows if smaller.
-            For example, [1 2 3; 4 5 6;] + [1 2; 4 5;] = [1+1 2+2 3+1; 4+4; 5+5, 6+4;]
-        "},
+            For example, [1 2 3; 4 5 6;] + [1 2; 4 5;] = [1+1 2+2 3+1; 4+4; 5+5, 6+4;] "},
     },
     BuiltinFunction {
         f: &sub,
@@ -241,8 +240,7 @@ pub const EXPORTS: [BuiltinFunction; 10] = [
         help: indoc! {"
             Usage: (- a b) -> type(a)
             Sub `b` from `a`, `a` and `b` can be numbers or matrixes.
-            If dimensions of matrixes are inconsistent, `b` is processed same way as `+`.
-        "},
+            If dimensions of matrixes are inconsistent, `b` is processed same way as `+`.  "},
     },
     BuiltinFunction {
         f: &times,
@@ -252,8 +250,7 @@ pub const EXPORTS: [BuiltinFunction; 10] = [
             Usage: (* a b) -> type(b)
             Times `a` and `b` if they are numbers, and dot if they are matrixes.
             Or, `a` can be a number and `b` can be a matrix, then `b` is scaled by `a`, but not vice-versa.
-            Colunms of `a` and rows of `b` must equal.
-        "},
+            Colunms of `a` and rows of `b` must equal.  "},
     },
     BuiltinFunction {
         f: &devide,
@@ -261,8 +258,7 @@ pub const EXPORTS: [BuiltinFunction; 10] = [
         argn: 2,
         help: indoc! {"
             Usage: (/ a b) -> type(b)
-            Devide `a` by `b`. Both must be numbers.
-        "},
+            Devide `a` by `b`. Both must be numbers.  "},
     },
     BuiltinFunction {
         f: &lt,
@@ -270,8 +266,7 @@ pub const EXPORTS: [BuiltinFunction; 10] = [
         argn: 2,
         help: indoc! {"
             Usage: (< a b) -> bool
-            Compare two numbers.
-        "},
+            Compare two numbers.  "},
     },
     BuiltinFunction {
         f: &gt,
@@ -279,8 +274,7 @@ pub const EXPORTS: [BuiltinFunction; 10] = [
         argn: 2,
         help: indoc! {"
             Usage: (> a b) -> bool
-            Compare two numbers.
-        "},
+            Compare two numbers.  "},
     },
     BuiltinFunction {
         f: &eq,
@@ -288,8 +282,7 @@ pub const EXPORTS: [BuiltinFunction; 10] = [
         argn: 2,
         help: indoc! {"
             Usage: (= a b) -> bool
-            Compare two numbers.
-        "},
+            Compare two numbers.  "},
     },
     BuiltinFunction {
         f: &and,
@@ -297,8 +290,7 @@ pub const EXPORTS: [BuiltinFunction; 10] = [
         argn: 2,
         help: indoc! {"
             Usage: (& a: bool b: bool) -> bool
-            AND operation.
-        "},
+            AND operation.  "},
     },
     BuiltinFunction {
         f: &or,
@@ -306,8 +298,7 @@ pub const EXPORTS: [BuiltinFunction; 10] = [
         argn: 2,
         help: indoc! {"
             Usage: (& a: bool b: bool) -> bool
-            OR operation.
-        "},
+            OR operation.  "},
     },
     BuiltinFunction {
         f: &to_float,
@@ -316,7 +307,6 @@ pub const EXPORTS: [BuiltinFunction; 10] = [
         help: indoc! {"
             Usage: (tofloat x: rational) -> float
                    (tofloat x: matrix<rational>) -> matrix<float>
-            Convert rational to float.
-        "},
+            Convert rational to float.  "},
     },
 ];

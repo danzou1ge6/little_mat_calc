@@ -142,8 +142,7 @@ pub const EXPORTS: [BuiltinFunction; 3] = [
             Usage: (maxrecur n: rational) -> nil | rational
             Set the max recursion limit to `n`, where `n` must be positive integer.
             Or, if `n` is `0`, returns current limit.
-            If `n` is too large, stack overflow might occur.
-        "},
+            If `n` is too large, stack overflow might occur.  "},
     },
     BuiltinFunction {
         f: &trace_back,
@@ -151,7 +150,6 @@ pub const EXPORTS: [BuiltinFunction; 3] = [
         argn: 1,
         help: indoc! {"
             Usage: (traceback on: bool) -> nil
-            Toggle if trace back is on
-        "},
+            Toggle if trace back is on "},
     },
 ];

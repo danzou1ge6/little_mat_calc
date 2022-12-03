@@ -354,8 +354,7 @@ pub const EXPORTS: [BuiltinFunction; 12] = [
         name: "inv",
         help: indoc! {"
             Calculate the inversion of a INVERTIBLE matrix;
-            Or 1/x if x is a number.
-        "},
+            Or 1/x if x is a number.  "},
     },
     BuiltinFunction {
         f: &eliminate,
@@ -384,8 +383,7 @@ pub const EXPORTS: [BuiltinFunction; 12] = [
             Solve linear equation `Ax=b`, returning
             - nil if there is no solution
             - a one-column matrix if there is only one solution
-            - `(general special)` where both are matrixes
-        "},
+            - `(general special)` where both are matrixes "},
     },
     BuiltinFunction {
         f: &transpose,
@@ -413,8 +411,7 @@ pub const EXPORTS: [BuiltinFunction; 12] = [
             Usage: (nullspace x: matrix) -> nil | matrix
             Calculates the null space of a matrix, returning
             - nil if the null space only consists of {0}
-            - a matrix containing a basis for the null space
-        "},
+            - a matrix containing a basis for the null space "},
     },
     BuiltinFunction {
         f: &ridentity,
@@ -429,8 +426,7 @@ pub const EXPORTS: [BuiltinFunction; 12] = [
         help: indoc! {"
             Usage: (concat t: table)
             Concat matrixes in the partition defined by `t`.
-            `t` can be, for example, `[a b;]`, which join `b` to the right of `a`.
-        "},
+            `t` can be, for example, `[a b;]`, which join `b` to the right of `a`.  "},
     },
     BuiltinFunction {
         f: &get,
@@ -438,7 +434,6 @@ pub const EXPORTS: [BuiltinFunction; 12] = [
         argn: 3,
         help: indoc! {"
             Usage: (get m: matrix i: rational j: rational)
-            Get the `(i, j)` element of matrix `m`.
-        "},
+            Get the `(i, j)` element of matrix `m`.  "},
     },
 ];
