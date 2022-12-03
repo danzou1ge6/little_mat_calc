@@ -24,8 +24,26 @@ LITERALS
         `[a b; c d;]`
 
 DEFINING VARIABLES
-    `def` keyword can be used to define variables, for example
+    `def` keyword can be used to define variables
+        `(def <variable-name> <value>)`
+    For example
         `(def x 1)`
+
+BUILTINS
+    There are a range of builtin-functions, for example
+        `(inv m)`
+    tries to calculate and return the inversion of `m`.
+    For any given builtin, use
+        `(help <builtin-name>)`
+    to get detailed information.
+    To get a list of available builtins, use
+        `(help 1)`
+
+CALLING FUNCTIONS
+    Functions can be called using the syntax:
+        `(<function-name> <arguments>... )`
+    For example, to get the (`i`, `j`) element of a matrix `m`, use
+        `(get m i j)`
 
 IF BRANCH
     `if` can be used to cotrol execution, syntax of which is
@@ -34,20 +52,15 @@ IF BRANCH
     otherwise `else` is evaluated and returned
 
 DEFINING FUNCTIONS
-    A kind of simple function is supported, they can be defined using `def`
-    keyword, for example,
+    A kind of simple function is supported, they can be defined using `def`,
+        `(def (<function-name> <argument-names>...) <function-body>)`
+    When executed, arguments are binded to `<argument-names>` and then
+    `<function-body>` is evaluated, which is the result of the function execution.
+
+    For example,
         `(def (pow x n) (if (< n 2) x (* x (pow x (- n 1)))))`
     defines a function that calculate `x * x * ... * x` `n` times
 
-BUILTINS
-    There are a range of builtin-functions, for example
-        `(inv m)`
-    tries to calculate and return the inversion of `m`.
-    For any given builtin, use
-        `(help <name>)`
-    to get detailed information.
-    To get a list of available builtins, use
-        `(help 1)`
 "};
 
 pub fn help(args: ObjectPairItem, _: &mut Environment) -> Output {
