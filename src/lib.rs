@@ -4,6 +4,9 @@ pub mod rational;
 /// Implements a [`Polynomial`]
 pub mod polynomial;
 
+/// Implements a [`Complex`]
+pub mod complex;
+
 /// Defines the trait that elements in a matrix must satisfy
 ///
 /// In short, these elements must be *linear*
