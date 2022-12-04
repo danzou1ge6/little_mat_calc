@@ -1,5 +1,6 @@
 use crate::element;
 use crate::error::MatError;
+use std::ops::{AddAssign, Mul, MulAssign, SubAssign};
 use MatError::*;
 
 pub mod alg;
@@ -151,7 +152,7 @@ pub trait Mat {
         for i in 0..self.rows() {
             for j in 0..self.cols() {
                 unsafe {
-                    self.get_mut_unchecked(i, j).ref_mul_assign(s);
+                    self.get_mut_unchecked(i, j).mul_assign(s);
                 }
             }
         }
@@ -167,9 +168,12 @@ pub trait Mat {
         for i in 0..self.rows() {
             for j in 0..rhs.cols() {
                 for k in 0..self.cols() {
-                    result
-                        .get_mut_unchecked(i, j)
-                        .ref_add_assign(&self.get_unchecked(i, k).ref_mul(rhs.get_unchecked(k, j)));
+                    result.get_mut_unchecked(i, j).add_assign(
+                        &self
+                            .get_unchecked(i, k)
+                            .clone()
+                            .mul(rhs.get_unchecked(k, j)),
+                    );
                 }
             }
         }
@@ -195,7 +199,7 @@ pub trait Mat {
         for i in 0..self.rows() {
             for j in 0..self.cols() {
                 self.get_mut_unchecked(i, j)
-                    .ref_add_assign(rhs.get_unchecked(i % rhs.rows(), j % rhs.cols()));
+                    .add_assign(rhs.get_unchecked(i % rhs.rows(), j % rhs.cols()));
             }
         }
     }
@@ -215,7 +219,7 @@ pub trait Mat {
         for i in 0..self.rows() {
             for j in 0..self.cols() {
                 self.get_mut_unchecked(i, j)
-                    .ref_sub_assign(rhs.get_unchecked(i % rhs.rows(), j % rhs.cols()));
+                    .sub_assign(rhs.get_unchecked(i % rhs.rows(), j % rhs.cols()));
             }
         }
     }
@@ -317,18 +321,18 @@ pub trait Mat {
     fn eliminated(self) -> EliminatedMatrix<Self::Item, Self>
     where
         Self: Sized,
-        Self::Item: RefInv,
+        Self::Item: Inv,
     {
         EliminatedMatrix::eliminated(self)
     }
 }
 
 /// Implements how two trait object of [`Mat`] are equaled
-impl<T> PartialEq<dyn Mat<Item = T>> for dyn Mat<Item = T>
+impl<T> PartialEq<&dyn Mat<Item = T>> for &dyn Mat<Item = T>
 where
     T: LinearElem,
 {
-    fn eq(&self, other: &dyn Mat<Item = T>) -> bool {
+    fn eq(&self, other: &&dyn Mat<Item = T>) -> bool {
         if self.rows() != other.rows() || self.cols() != other.cols() {
             return false;
         }
@@ -336,7 +340,7 @@ where
         for i in 0..self.rows() {
             for j in 0..self.cols() {
                 unsafe {
-                    if !self.get_unchecked(i, j).ref_eq(other.get_unchecked(i, j)) {
+                    if !self.get_unchecked(i, j).eq(other.get_unchecked(i, j)) {
                         return false;
                     }
                 }
@@ -345,7 +349,7 @@ where
 
         return true;
     }
-    fn ne(&self, other: &dyn Mat<Item = T>) -> bool {
+    fn ne(&self, other: &&dyn Mat<Item = T>) -> bool {
         if self.rows() != other.rows() || self.cols() != other.cols() {
             return true;
         }
@@ -353,7 +357,7 @@ where
         for i in 0..self.rows() {
             for j in 0..self.cols() {
                 unsafe {
-                    if !self.get_unchecked(i, j).ref_eq(other.get_unchecked(i, j)) {
+                    if !self.get_unchecked(i, j).eq(other.get_unchecked(i, j)) {
                         return true;
                     }
                 }
@@ -363,4 +367,3 @@ where
         return false;
     }
 }
-impl<T> Eq for dyn Mat<Item = T> where T: LinearElem {}

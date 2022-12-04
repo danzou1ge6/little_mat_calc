@@ -91,7 +91,7 @@ where
         loop {
             let mut tmp = if perm.neg() {
                 let mut t = T::add_zero();
-                t.ref_sub_assign(&T::mul_zero());
+                t.sub_assign(&T::mul_zero());
                 t
             } else {
                 T::mul_zero()
@@ -99,10 +99,10 @@ where
 
             for i in 0..mat.rows() {
                 let j = perm.get_unchecked(i);
-                tmp.ref_mul_assign(mat.get_unchecked(i, j));
+                tmp.mul_assign(mat.get_unchecked(i, j));
             }
 
-            result.ref_add_assign(&tmp);
+            result.add_assign(&tmp);
 
             if let None = perm.next() {
                 break;

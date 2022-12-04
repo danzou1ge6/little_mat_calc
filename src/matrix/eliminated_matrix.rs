@@ -6,7 +6,7 @@ use crate::element::*;
 /// Implementation of Gussian Elimination
 pub unsafe fn elimination<T, M: Mat<Item = T>>(mat: &mut M) -> [Vec<Option<usize>>; 2]
 where
-    T: LinearElem + RefInv,
+    T: LinearElem + Inv,
 {
     let mut pivot_col = 0;
     let mut pivot_row = 0;
@@ -38,8 +38,8 @@ where
 
                 mat.row_unchecked(i).sub_assign_unchecked(
                     mat.row_unchecked(pivot_row).clone_data().scale(
-                        &mat.get_unchecked(i, pivot_col)
-                            .ref_mul(&mat.get_unchecked(pivot_row, pivot_col).inv()),
+                        &mat.get_unchecked(i, pivot_col).clone()
+                            .mul(&mat.get_unchecked(pivot_row, pivot_col).clone().inv()),
                     ),
                 );
             }
@@ -59,7 +59,7 @@ where
 pub struct EliminatedMatrix<T, M>
 where
     M: Mat<Item = T>,
-    T: LinearElem + RefInv,
+    T: LinearElem + Inv,
 {
     /// The data
     pub mat: M,
@@ -73,7 +73,7 @@ where
 impl<T, M> EliminatedMatrix<T, M>
 where
     M: Mat<Item = T>,
-    T: LinearElem + RefInv,
+    T: LinearElem + Inv,
 {
     /// Eliminate a matrix and stores it in a [`EliminatedMatrix`]
     pub fn eliminated(mut mat: M) -> Self {
@@ -93,7 +93,7 @@ where
                     None => break,
                     Some(pivot_col) => {
                         self.row_unchecked(i)
-                            .scale(&self.get_unchecked(i, *pivot_col).inv());
+                            .scale(&self.get_unchecked(i, *pivot_col).clone().inv());
                     }
                 }
             }
@@ -189,8 +189,8 @@ where
                     let neg_pivot_val = coef_slice.dot_unchecked(&sol_slice);
                     let neg_pivot_val = neg_pivot_val.get_unchecked(0, 0);
                     *sol.get_mut_unchecked(*pivot, 0) = T::add_zero()
-                        .ref_sub(neg_pivot_val)
-                        .ref_mul(&self.get_unchecked(self.pivot_rows.get_unchecked(*pivot).unwrap(), *pivot).inv());
+                        .sub(neg_pivot_val)
+                        .mul(&self.get_unchecked(self.pivot_rows.get_unchecked(*pivot).unwrap(), *pivot).clone().inv());
                 }
 
                 result.col_unchecked(i).add_assign_unchecked(&sol);
@@ -222,9 +222,9 @@ where
 
                         let tmp = coef_slice.dot_unchecked(&sol_slice);
                         let tmp = tmp.get_unchecked(0, 0);
-                        *sol.get_mut_unchecked(*pivot, 0) = b.get_unchecked(i, 0)
-                            .ref_sub(tmp)
-                            .ref_mul(&self.get_unchecked(i, *pivot).inv());
+                        *sol.get_mut_unchecked(*pivot, 0) = b.get_unchecked(i, 0).clone()
+                            .sub(tmp)
+                            .mul(&self.get_unchecked(i, *pivot).clone().inv());
                     }
                 }
             }
@@ -281,7 +281,7 @@ where
 impl<T, M> Mat for EliminatedMatrix<T, M>
 where
     M: Mat<Item = T>,
-    T: LinearElem + RefInv,
+    T: LinearElem + Inv,
 {
     type Item = T;
 
@@ -315,7 +315,7 @@ mod display {
     impl<T, M> Display for EliminatedMatrix<T, M>
     where
         M: Mat<Item = T>,
-        T: LinearElem + Display + RefInv,
+        T: LinearElem + Display + Inv,
     {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             mat_print_buf(self, f)
@@ -325,7 +325,7 @@ mod display {
     impl<T, M> Debug for EliminatedMatrix<T, M>
     where
         M: Mat<Item = T>,
-        T: LinearElem + Display + RefInv,
+        T: LinearElem + Display + Inv,
     {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             mat_print_buf(self, f)

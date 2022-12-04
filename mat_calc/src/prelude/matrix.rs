@@ -4,7 +4,7 @@ use indoc::indoc;
 use mat::alg;
 use mat::alg::SolveResult;
 use mat::element::LinearElem;
-use mat::element::RefInv;
+use mat::element::Inv;
 use mat::error::MatError;
 use mat::ConcatedMatrix;
 use mat::DataMatrix;

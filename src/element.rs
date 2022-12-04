@@ -1,3 +1,4 @@
+use std::cmp::PartialEq;
 use std::ops::{Add, AddAssign, Div, Mul, MulAssign, Sub, SubAssign};
 
 /// Meaning there exists `0` satisfying for any `a` eixsts `b` s.t. `0 = a + b`
@@ -13,107 +14,15 @@ pub trait MulZero {
 }
 
 /// Species how `1/a` is calculated given reference to `a`
-pub trait RefInv {
-    fn inv(&self) -> Self;
+pub trait Inv {
+    fn inv(self) -> Self;
 }
-impl<T> RefInv for T
+impl<T> Inv for T
 where
-    T: Copy + Div<Output = T> + MulZero,
+    T: Copy + for<'a> Div<&'a Self, Output = T> + MulZero,
 {
-    fn inv(&self) -> Self {
-        Self::mul_zero() / *self
-    }
-}
-
-/// Species how to tell if `a == b` given references to them
-pub trait RefEq {
-    fn ref_eq(&self, rhs: &Self) -> bool;
-}
-impl<T> RefEq for T
-where
-    T: AddZero + RefSub<Output = Self>,
-{
-    fn ref_eq(&self, rhs: &Self) -> bool {
-        (self.ref_sub(rhs)).is_add_zero()
-    }
-}
-
-/// Species how to substract `b` from `a` given their references
-///
-/// Following are the same
-pub trait RefMulAssign {
-    fn ref_mul_assign(&mut self, rhs: &Self);
-}
-impl<T> RefMulAssign for T
-where
-    T: Copy + MulAssign,
-{
-    fn ref_mul_assign(&mut self, rhs: &Self) {
-        *self *= *rhs;
-    }
-}
-pub trait RefAddAssign {
-    fn ref_add_assign(&mut self, rhs: &Self);
-}
-impl<T> RefAddAssign for T
-where
-    T: Copy + AddAssign,
-{
-    fn ref_add_assign(&mut self, rhs: &Self) {
-        *self += *rhs;
-    }
-}
-pub trait RefSubAssign {
-    fn ref_sub_assign(&mut self, rhs: &Self);
-}
-impl<T> RefSubAssign for T
-where
-    T: Copy + SubAssign,
-{
-    fn ref_sub_assign(&mut self, rhs: &Self) {
-        *self -= *rhs;
-    }
-}
-
-/// Species how to calculate `a*b` given reference to `a` and `b`
-pub trait RefMul {
-    type Output;
-    fn ref_mul(&self, rhs: &Self) -> Self::Output;
-}
-impl<T> RefMul for T
-where
-    T: Copy + Mul<Output = T>,
-{
-    type Output = T;
-    fn ref_mul(&self, rhs: &Self) -> Self::Output {
-        *self * *rhs
-    }
-}
-
-pub trait RefAdd {
-    type Output;
-    fn ref_add(&self, rhs: &Self) -> Self::Output;
-}
-impl<T> RefAdd for T
-where
-    T: Copy + Add<Output = T>,
-{
-    type Output = T;
-    fn ref_add(&self, rhs: &Self) -> Self::Output {
-        *self + *rhs
-    }
-}
-pub trait RefSub {
-    type Output;
-    fn ref_sub(&self, rhs: &Self) -> Self::Output;
-}
-impl<T> RefSub for T
-where
-    T: Copy + Sub<Output = T>,
-{
-    type Output = T;
-    fn ref_sub(&self, rhs: &Self) -> Self::Output {
-        *self - *rhs
+    fn inv(self) -> Self {
+        Self::mul_zero() / &self
     }
 }
 
@@ -122,12 +31,13 @@ pub trait LinearElem:
     + Clone
     + AddZero
     + MulZero
-    + RefAdd<Output = Self>
-    + RefAddAssign
-    + RefMul<Output = Self>
-    + RefMulAssign
-    + RefSub<Output = Self>
-    + RefSubAssign
+    + for<'a> Add<&'a Self, Output = Self>
+    + for<'a> AddAssign<&'a Self>
+    + for<'a> Sub<&'a Self, Output = Self>
+    + for<'a> SubAssign<&'a Self>
+    + for<'a> Mul<&'a Self, Output = Self>
+    + for<'a> MulAssign<&'a Self>
+    + PartialEq
     + std::fmt::Display
     + std::fmt::Debug
 {

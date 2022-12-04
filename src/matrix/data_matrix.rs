@@ -1,5 +1,5 @@
 use super::Mat;
-use crate::element::{LinearElem, RefEq};
+use crate::element::{LinearElem};
 use crate::error::MatError;
 use MatError::*;
 
@@ -114,7 +114,7 @@ impl<T: LinearElem> PartialEq for DataMatrix<T> {
         for i in 0..self.rows() {
             for j in 0..self.cols() {
                 unsafe {
-                    if !self.get_unchecked(i, j).ref_eq(other.get_unchecked(i, j)) {
+                    if !self.get_unchecked(i, j).eq(other.get_unchecked(i, j)) {
                         return false;
                     }
                 }

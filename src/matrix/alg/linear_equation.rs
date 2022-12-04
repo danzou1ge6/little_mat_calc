@@ -48,7 +48,7 @@ mod display {
 
 pub fn solve_augmented<T: LinearElem>(augmented: impl Mat<Item = T>) -> SolveResult<T>
 where
-    T: LinearElem + RefInv,
+    T: LinearElem + Inv,
 {
     let augmented = augmented.eliminated();
 
@@ -75,7 +75,7 @@ pub fn solve<T>(
     b: &mut dyn Mat<Item = T>,
 ) -> Result<SolveResult<T>, MatError>
 where
-    T: LinearElem + RefInv,
+    T: LinearElem + Inv,
 {
     if b.cols() != 1 {
         return Err(InconsistentDimension {

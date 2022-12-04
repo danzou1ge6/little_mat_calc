@@ -1,7 +1,7 @@
 #[derive(PartialEq, Clone, Copy, Debug)]
 pub struct Complex (pub f64, pub f64);
 
-use crate::element::RefInv;
+use crate::element::Inv;
 
 use std::ops::{Add, Sub, Div, Mul, AddAssign, SubAssign, MulAssign, DivAssign};
 use std::fmt::Display;
@@ -24,52 +24,52 @@ impl Complex {
     }
 }
 
-impl Add for Complex {
+impl Add<&Self> for Complex {
     type Output = Self;
-    fn add(self, rhs: Self) -> Self::Output {
+    fn add(self, rhs: &Self) -> Self::Output {
         Self(self.0 + rhs.0, self.1 + rhs.1)
     }
 }
-impl AddAssign for Complex {
-    fn add_assign(&mut self, rhs: Self) {
+impl AddAssign<&Self> for Complex {
+    fn add_assign(&mut self, rhs: &Self) {
         self.0 += rhs.0;
         self.1 += rhs.1;
     }
 }
-impl Sub for Complex {
+impl Sub<&Self> for Complex {
     type Output = Self;
-    fn sub(self, rhs: Self) -> Self::Output {
+    fn sub(self, rhs: &Self) -> Self::Output {
         Self(self.0 - rhs.0, self.1 - rhs.1)
     }
 }
-impl SubAssign for Complex {
-    fn sub_assign(&mut self, rhs: Self) {
+impl SubAssign<&Self> for Complex {
+    fn sub_assign(&mut self, rhs: &Self) {
         self.0 -= rhs.0;
         self.1 -= rhs.1;
     }
 }
 
-impl Mul for Complex {
+impl Mul<&Self> for Complex {
     type Output = Self;
-    fn mul(self, rhs: Self) -> Self::Output {
+    fn mul(self, rhs: &Self) -> Self::Output {
         Self(self.0 * rhs.0 - self.1 * rhs.1, self.0 * rhs.1 + self.1 * rhs.0)
     }
 }
-impl MulAssign for Complex {
-    fn mul_assign(&mut self, rhs: Self) {
+impl MulAssign<&Self> for Complex {
+    fn mul_assign(&mut self, rhs: &Self) {
         self.0 = self.0 * rhs.0 - self.1 * rhs.1;
         self.1 = self.0 * rhs.1 + self.1 * rhs.0;
     }
 }
-impl Div for Complex {
+impl Div<&Self> for Complex {
     type Output = Self;
-    fn div(self, rhs: Self) -> Self::Output {
-        self.mul(rhs.inv())
+    fn div(self, rhs: &Self) -> Self::Output {
+        self.mul(&rhs.inv())
     }
 }
-impl DivAssign for Complex {
-    fn div_assign(&mut self, rhs: Self) {
-        self.mul_assign(rhs.inv())
+impl DivAssign<&Self> for Complex {
+    fn div_assign(&mut self, rhs: &Self) {
+        self.mul_assign(&rhs.inv())
     }
 }
 

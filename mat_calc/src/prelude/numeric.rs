@@ -19,7 +19,7 @@ pub fn add(args: ObjectPairItem, _: &mut Environment) -> Output {
         List(pair) => match (&pair.first, &pair.second) {
             (Lit(a), Lit(b)) => match (a, b) {
                 (Float(a), Float(b)) => return Ok(Lit(Float(a + b))),
-                (Rat(a), Rat(b)) => return Ok(Lit(Rat(*a + *b))),
+                (Rat(a), Rat(b)) => return Ok(Lit(Rat(*a + b))),
                 (Matrix(MatrixWrap::Flt(a)), Matrix(MatrixWrap::Flt(b))) => {
                     return Ok(Lit(Matrix(MatrixWrap::Flt(Rc::new(a.add(b.as_ref()))))));
                 }
@@ -49,7 +49,7 @@ pub fn sub(args: ObjectPairItem, _: &mut Environment) -> Output {
         List(pair) => match (&pair.first, &pair.second) {
             (Lit(a), Lit(b)) => match (a, b) {
                 (Float(a), Float(b)) => return Ok(Lit(Float(a - b))),
-                (Rat(a), Rat(b)) => return Ok(Lit(Rat(*a - *b))),
+                (Rat(a), Rat(b)) => return Ok(Lit(Rat(*a - b))),
                 (Matrix(MatrixWrap::Flt(a)), Matrix(MatrixWrap::Flt(b))) => {
                     return Ok(Lit(Matrix(MatrixWrap::Flt(Rc::new(a.sub(b.as_ref()))))));
                 }
@@ -83,7 +83,7 @@ pub fn times(args: ObjectPairItem, _: &mut Environment) -> Output {
         List(pair) => match (&pair.first, &pair.second) {
             (Lit(a), Lit(b)) => match (a, b) {
                 (Float(a), Float(b)) => return Ok(Lit(Float(a * b))),
-                (Rat(a), Rat(b)) => return Ok(Lit(Rat(*a * *b))),
+                (Rat(a), Rat(b)) => return Ok(Lit(Rat(*a * b))),
                 (Matrix(MatrixWrap::Flt(a)), Matrix(MatrixWrap::Flt(b))) => {
                     match a.dot(b.as_ref()) {
                         Ok(r) => return Ok(Lit(Matrix(MatrixWrap::Flt(Rc::new(r))))),
@@ -127,7 +127,7 @@ pub fn devide(args: ObjectPairItem, _: &mut Environment) -> Output {
                     if b.0 == 0 {
                         return Err(EvalError::zero_division(format!("{}/0", a)));
                     }
-                    return Ok(Lit(Rat(*a / *b)));
+                    return Ok(Lit(Rat(*a / b)));
                 }
                 (a, b) => return Err(EvalError::typ(format!("Can't devide `{}` and `{}`", a, b))),
             },
@@ -144,10 +144,10 @@ pub fn eq(args: ObjectPairItem, _: &mut Environment) -> Output {
                 (Rat(a), Rat(b)) => return Ok(Lit(Bool(a == b))),
                 (Nil, Nil) => return Ok(Lit(Bool(true))),
                 (Matrix(MatrixWrap::Flt(a)), Matrix(MatrixWrap::Flt(b))) => {
-                    return Ok(Lit(Bool(a.eq(b))))
+                    return Ok(Lit(Bool(a.as_ref() == b.as_ref())))
                 }
                 (Matrix(MatrixWrap::Rat(a)), Matrix(MatrixWrap::Rat(b))) => {
-                    return Ok(Lit(Bool(a.eq(b))))
+                    return Ok(Lit(Bool(a.as_ref() == b.as_ref())))
                 }
                 _ => return Ok(Lit(Bool(false))),
             },

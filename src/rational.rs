@@ -77,10 +77,10 @@ impl Rational {
     }
 }
 
-impl Add for Rational {
+impl Add<&Self> for Rational {
     type Output = Self;
 
-    fn add(self, rhs: Self) -> Self::Output {
+    fn add(self, rhs: &Self) -> Self::Output {
         let p = self.0 * rhs.1 + self.1 * rhs.0;
         let q = self.1 * rhs.1;
         let mut ret = Rational(p, q);
@@ -89,10 +89,10 @@ impl Add for Rational {
     }
 }
 
-impl Sub for Rational {
+impl Sub<&Self> for Rational {
     type Output = Self;
 
-    fn sub(self, rhs: Self) -> Self::Output {
+    fn sub(self, rhs: &Self) -> Self::Output {
         let p = self.0 * rhs.1 - self.1 * rhs.0;
         let q = self.1 * rhs.1;
         let mut ret = Rational(p, q);
@@ -101,24 +101,24 @@ impl Sub for Rational {
     }
 }
 
-impl Mul for Rational {
+impl Mul<&Self> for Rational {
     type Output = Self;
 
-    fn mul(self, rhs: Self) -> Self::Output {
+    fn mul(self, rhs: &Self) -> Self::Output {
         let mut ret = Rational(self.0 * rhs.0, self.1 * rhs.1);
         ret.simplify();
         ret
     }
 }
 
-impl Div for Rational {
+impl Div<&Self> for Rational {
     type Output = Self;
 
-    fn div(self, rhs: Self) -> Self::Output {
+    fn div(self, rhs: &Self) -> Self::Output {
         if rhs.0 == 0 {
             panic!("Devided by zero");
         }
-        self.mul(rhs.inv())
+        self.mul(&rhs.inv())
     }
 }
 
@@ -160,32 +160,32 @@ impl Ord for Rational {
     }
 }
 
-impl AddAssign for Rational {
-    fn add_assign(&mut self, rhs: Self) {
-        let v = *self + rhs;
+impl AddAssign<&Self> for Rational {
+    fn add_assign(&mut self, rhs: &Self) {
+        let v = *self + &rhs;
         self.0 = v.0;
         self.1 = v.1;
     }
 }
 
-impl SubAssign for Rational {
-    fn sub_assign(&mut self, rhs: Self) {
-        let v = *self - rhs;
+impl SubAssign<&Self> for Rational {
+    fn sub_assign(&mut self, rhs: &Self) {
+        let v = *self - &rhs;
         self.0 = v.0;
         self.1 = v.1;
     }
 }
 
-impl MulAssign for Rational {
-    fn mul_assign(&mut self, rhs: Self) {
-        let v = *self * rhs;
+impl MulAssign<&Self> for Rational {
+    fn mul_assign(&mut self, rhs: &Self) {
+        let v = *self * &rhs;
         self.0 = v.0;
         self.1 = v.1;
     }
 }
 
-impl DivAssign for Rational {
-    fn div_assign(&mut self, rhs: Self) {
+impl DivAssign<&Self> for Rational {
+    fn div_assign(&mut self, rhs: &Self) {
         let v = *self / rhs;
         self.0 = v.0;
         self.1 = v.1;
@@ -226,19 +226,19 @@ mod test {
 
     #[test]
     fn test_add_pos() {
-        assert_eq!(rational!(2, 3) + rational!(5, 4), rational!(23, 12))
+        assert_eq!(rational!(2, 3) + &rational!(5, 4), rational!(23, 12))
     }
     #[test]
     fn test_add_neg() {
-        assert_eq!(rational!(-2, 3) + rational!(5, 4), rational!(7, 12))
+        assert_eq!(rational!(-2, 3) + &rational!(5, 4), rational!(7, 12))
     }
     #[test]
     fn test_mul() {
-        assert_eq!(rational!(2, 3) * rational!(9, 7), rational!(6, 7))
+        assert_eq!(rational!(2, 3) * &rational!(9, 7), rational!(6, 7))
     }
     #[test]
     fn test_div() {
-        assert_eq!(rational!(2, 3) / rational!(7, 9), rational!(6, 7))
+        assert_eq!(rational!(2, 3) / &rational!(7, 9), rational!(6, 7))
     }
     #[test]
     fn test_gt() {

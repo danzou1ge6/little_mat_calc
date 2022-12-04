@@ -1,5 +1,6 @@
 use super::*;
 use crate::element::*;
+use std::ops::{Sub, Add, Mul, SubAssign, AddAssign, MulAssign};
 
 pub struct MatBlock<'a, T: LinearElem + 'a>(pub Box<dyn Mat<Item = T> + 'a>);
 
@@ -79,72 +80,82 @@ where
     }
 }
 
-impl<'a, T> RefSubAssign for MatBlock<'a, T>
+impl<'a, T> SubAssign<&Self> for MatBlock<'a, T>
 where
     T: LinearElem + 'a,
 {
-    fn ref_sub_assign(&mut self, rhs: &Self) {
+    fn sub_assign(&mut self, rhs: &Self) {
+        
         self.0.sub_assign(rhs.0.as_ref())
     }
 }
-impl<'a, T> RefAddAssign for MatBlock<'a, T>
+impl<'a, T> AddAssign<&Self> for MatBlock<'a, T>
 where
     T: LinearElem + 'a,
 {
-    fn ref_add_assign(&mut self, rhs: &Self) {
+    fn add_assign(&mut self, rhs: &Self) {
         self.0.add_assign(rhs.0.as_ref())
     }
 }
-impl<'a, T> RefMulAssign for MatBlock<'a, T>
+impl<'a, T> MulAssign<&Self> for MatBlock<'a, T>
 where
     T: LinearElem + 'a,
 {
-    fn ref_mul_assign(&mut self, rhs: &Self) {
+    fn mul_assign(&mut self, rhs: &Self) {
         let result = self.0.dot(rhs.0.as_ref()).unwrap();
         let mut result = MatBlock(Box::new(result));
         std::mem::swap(self, &mut result);
     }
 }
 
-impl<'a, T> RefSub for MatBlock<'a, T>
+impl<'a, T> Sub<&Self> for MatBlock<'a, T>
 where
     T: LinearElem + 'a,
 {
     type Output = Self;
-    fn ref_sub(&self, rhs: &Self) -> Self::Output {
+    fn sub(self, rhs: &Self) -> Self::Output {
         let mut result = self.0.clone_data();
         result.sub_assign(rhs.0.as_ref());
         MatBlock(Box::new(result))
     }
 }
-impl<'a, T> RefAdd for MatBlock<'a, T>
+impl<'a, T> Add<&Self> for MatBlock<'a, T>
 where
     T: LinearElem + 'a,
 {
     type Output = Self;
-    fn ref_add(&self, rhs: &Self) -> Self::Output {
+    fn add(self, rhs: &Self) -> Self::Output {
         let mut result = self.0.clone_data();
         result.add_assign(rhs.0.as_ref());
         MatBlock(Box::new(result))
     }
 }
-impl<'a, T> RefMul for MatBlock<'a, T>
+impl<'a, T> Mul<&Self> for MatBlock<'a, T>
 where
     T: LinearElem + 'a,
 {
     type Output = Self;
-    fn ref_mul(&self, rhs: &Self) -> Self::Output {
+    fn mul(self, rhs: &Self) -> Self::Output {
         MatBlock(Box::new(self.0.dot(rhs.0.as_ref()).unwrap()))
     }
 }
 
-impl<'a, T> RefInv for MatBlock<'a, T>
+impl<'a, T> Inv for MatBlock<'a, T>
 where
-    T: LinearElem + 'a + RefInv,
+    T: LinearElem + 'a + Inv,
 {
-    fn inv(&self) -> Self {
+    fn inv(self) -> Self {
         use crate::alg::inv;
         MatBlock(Box::new(inv(&mut self.0.clone_data()).unwrap()))
+    }
+}
+
+impl<'a, T> PartialEq for MatBlock<'a, T> where T: LinearElem {
+    fn eq(&self, other: &Self) -> bool {
+        self.0.as_ref() == other.0.as_ref()
+    }
+    fn ne(&self, other: &Self) -> bool {
+        self.0.as_ref() != other.0.as_ref()
     }
 }
 

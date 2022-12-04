@@ -1,6 +1,6 @@
 mod inv_mat {
     use super::super::{DataMatrix, EliminatedMatrix, Mat, MatError};
-    use crate::element::{LinearElem, RefInv};
+    use crate::element::{LinearElem, Inv};
     use MatError::*;
 
     /// Caculate the inverted matrix, if any, of `mat`
@@ -11,7 +11,7 @@ mod inv_mat {
     /// Caution: this method ruins the original matrix, turning it into an identity
     pub fn inv<T>(mat: &mut dyn Mat<Item = T>) -> Result<DataMatrix<T>, MatError>
     where
-        T: LinearElem + RefInv,
+        T: LinearElem + Inv,
     {
         use mat_macro::concated_mat_;
 
@@ -93,7 +93,7 @@ mod trace {
             let mut tr = T::add_zero();
             for i in 0..mat.rows() {
                 unsafe {
-                    tr.ref_add_assign(mat.get_unchecked(i, i));
+                    tr.add_assign(mat.get_unchecked(i, i));
                 }
             }
             return Ok(tr);
