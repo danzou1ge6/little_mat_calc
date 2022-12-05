@@ -29,6 +29,8 @@ pub enum MatError {
     ConcatFailure(String),
     /// Empty
     EmptyMatrix,
+    /// Expected Vector
+    ExpectedVector
 }
 
 impl Display for MatError {
@@ -63,6 +65,7 @@ impl Display for MatError {
             NotSquare { dim } => write!(f, "Need a square matrix, got {:?}", dim),
             ConcatFailure(s) => write!(f, "{s}"),
             EmptyMatrix => write!(f, "Empty matrix"),
+            ExpectedVector => write!(f, "Expected vector"),
         }
     }
 }

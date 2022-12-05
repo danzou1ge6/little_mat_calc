@@ -325,6 +325,23 @@ pub trait Mat {
     {
         EliminatedMatrix::eliminated(self)
     }
+
+    /// Write data in `other` into `self`. Dimension is not checked
+    unsafe fn write_data_unchecked(&mut self, other: &dyn Mat<Item = Self::Item>) {
+        for i in 0..self.rows() { for j in 0..self.cols() {
+            *self.get_mut_unchecked(i, j) = other.get_unchecked(i, j).clone();
+        }}
+    }
+
+    /// Write data in `other` into `self`
+    fn write_data(&mut self, other: &dyn Mat<Item = Self::Item>) -> Result<(), MatError> {
+        if self.dimensions() != other.dimensions() {
+            return Err(InconsistentDimension { need: self.dimensions(), got: other.dimensions() });
+        }
+        unsafe { self.write_data_unchecked(other) }
+
+        Ok(())
+    }
 }
 
 /// Implements how two trait object of [`Mat`] are equaled

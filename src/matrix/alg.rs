@@ -81,6 +81,20 @@ mod trace {
     use crate::error::MatError;
     use crate::Mat;
 
+
+    pub unsafe fn trace_unchecked<T>(mat: &dyn Mat<Item = T>) -> T
+    where
+        T: LinearElem,
+    {
+        let mut tr = T::add_zero();
+        for i in 0..mat.rows() {
+            unsafe {
+                tr.add_assign(mat.get_unchecked(i, i));
+            }
+        }
+        return tr;
+    }
+
     pub fn trace<T>(mat: &dyn Mat<Item = T>) -> Result<T, MatError>
     where
         T: LinearElem,
@@ -89,18 +103,21 @@ mod trace {
             return Err(MatError::NotSquare {
                 dim: mat.dimensions(),
             });
-        } else {
-            let mut tr = T::add_zero();
-            for i in 0..mat.rows() {
-                unsafe {
-                    tr.add_assign(mat.get_unchecked(i, i));
-                }
-            }
-            return Ok(tr);
         }
+        Ok(unsafe { trace_unchecked(mat) }) 
     }
 }
-pub use trace::trace;
+pub use trace::{trace, trace_unchecked};
 
 mod linear_equation;
 pub use linear_equation::{solve, solve_augmented, SolveResult};
+
+/// A module for decompositing matrix into upper triangle
+mod eigen;
+pub use eigen::{hessenberg_unchecked, hessengerb, householder_unchecked, householder, qr_unchecked, qr};
+pub use eigen::EigenValueSolver;
+
+/// A module for calculating normal of vectors
+mod normal;
+pub use normal::{col_normal, col_normal_sqr, col_normal_unchecked, col_normal_sqr_unchecked};
+pub use normal::{row_normal, row_normal_sqr, row_normal_sqr_unchecked, row_normal_unchecked};

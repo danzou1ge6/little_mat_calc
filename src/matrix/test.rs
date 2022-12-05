@@ -73,3 +73,17 @@ fn test_transpose() {
     .transposed();
     assert_eq!(a, mat_![1 4; 2 5; 3 6;]);
 }
+
+#[test]
+fn test_write_data() {
+    let a: DataMatrix<i32> = mat_![
+        1 2 3;
+        4 5 6;
+    ];
+    let mut a_slice = SliceMatrix::new(&a, 0, 2, 0, 2).unwrap();
+    let b = mat_![2 4; 8 10;];
+
+    a_slice.write_data(&b).unwrap();
+
+    assert_eq!(a, mat_![2 4 3; 8 10 6;]);
+}
