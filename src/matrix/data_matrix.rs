@@ -54,6 +54,37 @@ where
             is_transposed: false,
         }
     }
+
+    /// Initialize a [`DataMatrix`] with elements on the diagnol.
+    /// Other elements are kept zero.
+    pub fn with_diag(diag: Vec<T>) -> Self {
+        let mut r = Self::zeros(diag.len(), diag.len());
+        for (i, item) in diag.into_iter().enumerate() {
+            unsafe {
+                *r.get_mut_unchecked(i, i) = item;
+            }
+        }
+        r
+    }
+
+    /// Initialize a [`DataMatrix`] of one column
+    pub fn one_col(col: Vec<T>) -> Self {
+        unsafe {
+            let len = col.len();
+            Self::new_unchecked(col, len, 1)
+        }
+    }
+
+    /// Initialize a [`DataMatrix`] of one row
+    pub fn one_row(row: Vec<T>) -> Self {
+        unsafe {
+            let len = row.len();
+            Self::new_unchecked(row, 1, len)
+        }
+    }
+    
+    /// Move data out of the matrix
+    pub fn data(self) -> Vec<T> { self.data }
 }
 
 impl<T> Mat for DataMatrix<T>

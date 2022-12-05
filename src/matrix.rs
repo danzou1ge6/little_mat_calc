@@ -342,6 +342,20 @@ pub trait Mat {
 
         Ok(())
     }
+
+    /// Clone the elements on the diagnol and return them in a [`Vec`]
+    /// If the matrix is not square, all elements at `(i, i)` are taken
+    fn clone_diag(&self) -> Vec<Self::Item> {
+        let n = self.rows().min(self.cols());
+        let mut v = Vec::with_capacity(n);
+
+        for i in 0..n {
+            unsafe {
+                v.push(self.get_unchecked(i, i).clone());
+            }
+        }
+        v
+    }
 }
 
 /// Implements how two trait object of [`Mat`] are equaled

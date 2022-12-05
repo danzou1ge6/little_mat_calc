@@ -385,7 +385,27 @@ pub fn eigenvalues(args: ObjectPairItem, _: &mut Environment) -> Output {
     }
 }
 
-pub const EXPORTS: [BuiltinFunction; 15] = [
+pub fn diag(args: ObjectPairItem, _: &mut Environment) -> Output {
+    match args {
+        Lit(Matrix(MatrixWrap::Cpl(m))) => {
+            if m.cols() == 1 || m.rows() == 1 {
+                return Ok(Lit(Matrix(MatrixWrap::Cpl(Rc::new(DataMatrix::with_diag(m.clone_data().data()))))));
+            } else {
+                return Ok(Lit(Matrix(MatrixWrap::Cpl(Rc::new(DataMatrix::one_col(m.clone_diag()))))));
+            }
+        },
+        Lit(Matrix(MatrixWrap::Rat(m))) => {
+            if m.cols() == 1 || m.rows() == 1 {
+                return Ok(Lit(Matrix(MatrixWrap::Rat(Rc::new(DataMatrix::with_diag(m.clone_data().data()))))));
+            } else {
+                return Ok(Lit(Matrix(MatrixWrap::Rat(Rc::new(DataMatrix::one_col(m.clone_diag()))))));
+            }
+        },
+        _ => return Err(EvalError::typ(format!("Take one matrix as arguments")))
+    }
+}
+
+pub const EXPORTS: [BuiltinFunction; 16] = [
     BuiltinFunction {
         f: &inv,
         argn: 1,
@@ -506,5 +526,15 @@ pub const EXPORTS: [BuiltinFunction; 15] = [
             vector.
             The matrix must be complex, but only the real part of each element is
             taken."}
+    },
+    BuiltinFunction {
+        f: &diag,
+        name: "diag",
+        argn: 1,
+        help: indoc! {"
+            Usage: (diag m: matrix) -> matrix
+            If `m` is one column or one row, then it's data is used to initialize
+            a square matrix with diagnol from `m`;
+            Otherwise, the diagnol of `m` is taken and returned as a column vector."}
     }
 ];
