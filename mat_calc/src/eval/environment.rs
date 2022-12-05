@@ -57,7 +57,7 @@ impl Environment {
     }
 
     /// Define a object with a name in the top frame
-    fn define_var(&mut self, name: String, value: ObjectPairItem) {
+    pub fn define_var(&mut self, name: String, value: ObjectPairItem) {
         self.frame().insert(name, value);
     }
 

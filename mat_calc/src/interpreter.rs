@@ -65,7 +65,10 @@ impl Interpreter {
             PendingResult::Ok(tokens) => {
                 self.parser.clear();
                 match self.env.eval(tokens) {
-                    Ok(obj) => return PendingResult::Ok(obj),
+                    Ok(obj) => {
+                        self.env.define_var("_".to_string(), obj.clone());
+                        return PendingResult::Ok(obj)
+                    },
                     Err(err) => return PendingResult::Err(err.into()),
                 }
             }
