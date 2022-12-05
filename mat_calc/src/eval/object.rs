@@ -1,14 +1,15 @@
 use super::{environment::Environment, error::EvalError};
 use crate::{mat_wrap::MatrixWrap, table::Table};
 use mat::Rational;
+use mat::Complex;
 use std::rc::Rc;
 
 #[derive(Clone)]
 pub enum Literal {
     /// Rational, eg 3/7
     Rat(Rational),
-    /// Float, eg. `1.2`
-    Float(f64),
+    /// Complex, eg. `1.2 + 3j`
+    Cplx(Complex),
     /// Matrix
     Matrix(MatrixWrap),
     ///
@@ -29,7 +30,7 @@ impl TryInto<Literal> for Token {
         use Token::*;
 
         match self {
-            Float(fl) => Ok(Literal::Float(fl)),
+            Cplx(fl) => Ok(Literal::Cplx(fl)),
             Nil => Ok(Literal::Nil),
             Rat(r) => Ok(Literal::Rat(r)),
             Matrix(m) => Ok(Literal::Matrix(m)),
@@ -103,7 +104,7 @@ mod display {
 
             match self {
                 Rat(r) => r.fmt(f),
-                Float(fl) => fl.fmt(f),
+                Cplx(fl) => fl.fmt(f),
                 Nil => write!(f, "nil"),
                 Matrix(m) => write!(f, "\n{m}"),
                 Table(t) => write!(f, "{t}"),

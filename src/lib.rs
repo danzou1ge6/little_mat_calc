@@ -29,3 +29,4 @@ pub use matrix::MatBlock;
 pub use matrix::{ConcatedMatrix, DataMatrix, EliminatedMatrix, Mat, SliceMatrix};
 pub use polynomial::Polynomial;
 pub use rational::Rational;
+pub use complex::Complex;

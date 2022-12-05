@@ -1,7 +1,8 @@
 #[derive(PartialEq, Clone, Copy, Debug)]
 pub struct Complex (pub f64, pub f64);
 
-use crate::element::Inv;
+use crate::Rational;
+use crate::element::{Inv, AddZero};
 
 use std::ops::{Add, Sub, Div, Mul, AddAssign, SubAssign, MulAssign, DivAssign};
 use std::fmt::Display;
@@ -22,6 +23,8 @@ impl Complex {
     pub fn adjoint(self) -> Self {
         Self(self.0, -self.1)
     }
+    pub fn re(&self) -> f64 { self.0 }
+    pub fn im(&self) -> f64 { self.1 }
 }
 
 impl Add<&Self> for Complex {
@@ -75,30 +78,48 @@ impl DivAssign<&Self> for Complex {
 
 impl Display for Complex {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}+{}j", self.0, self.1)
+        if self.1.is_add_zero() {
+            write!(f, "{}", self.0)
+        } else if self.0.is_add_zero() {
+            write!(f, "{}j", self.1)
+        } else {
+            write!(f, "{}+{}j", self.0, self.1)
+        }
     }
 }
 
-impl TryInto<Complex> for &str {
+impl TryFrom<&str> for Complex {
     type Error = ();
-    fn try_into(self) -> Result<Complex, Self::Error> {
-        if let Some(jidx) = self.find('j') {
-            if let Some(aidx) = self.find('+') {
-                if let (Ok(re), Ok(im)) = (&self[..aidx].parse(), &self[aidx+1..jidx].parse()) {
+    fn try_from(val: &str) -> Result<Complex, Self::Error> {
+        if let Some(jidx) = val.find('j') {
+            if let Some(aidx) = val.find('+') {
+                if let (Ok(re), Ok(im)) = (&val[..aidx].parse(), &val[aidx+1..jidx].parse()) {
                     return Ok(Complex::new(*re, *im));
                 }
             }
-            if let Some(midx) = self.find('-') {
-                if let (Ok(re), Ok(im)) = (&self[..midx].parse(), &self[midx+1..jidx].parse()) {
+            if let Some(midx) = val.find('-') {
+                if let (Ok(re), Ok(im)) = (&val[..midx].parse(), &val[midx+1..jidx].parse()) {
                     let mim: f64 = *im;
                     return Ok(Complex::new(*re, -mim));
                 }
             }
-            if let Ok(im) = &self[..jidx].parse() {
+            if let Ok(im) = &val[..jidx].parse() {
                 return Ok(Complex::new(0.0, *im));
             }
         }
         return Err(());
+    }
+
+}
+
+impl From<f64> for Complex {
+    fn from(value: f64) -> Self {
+        Self(value, 0.0)
+    }
+}
+impl From<Rational> for Complex {
+    fn from(value: Rational) -> Self {
+        f64::from(value).into()
     }
 }
 

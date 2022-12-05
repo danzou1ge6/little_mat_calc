@@ -1,4 +1,5 @@
 use indoc::indoc;
+use mat::Complex;
 use mat::DataMatrix;
 use mat::Mat;
 use std::rc::Rc;
@@ -18,18 +19,18 @@ pub fn add(args: ObjectPairItem, _: &mut Environment) -> Output {
     match args {
         List(pair) => match (&pair.first, &pair.second) {
             (Lit(a), Lit(b)) => match (a, b) {
-                (Float(a), Float(b)) => return Ok(Lit(Float(a + b))),
+                (Cplx(a), Cplx(b)) => return Ok(Lit(Cplx(*a + b))),
                 (Rat(a), Rat(b)) => return Ok(Lit(Rat(*a + b))),
-                (Matrix(MatrixWrap::Flt(a)), Matrix(MatrixWrap::Flt(b))) => {
-                    return Ok(Lit(Matrix(MatrixWrap::Flt(Rc::new(a.add(b.as_ref()))))));
+                (Matrix(MatrixWrap::Cpl(a)), Matrix(MatrixWrap::Cpl(b))) => {
+                    return Ok(Lit(Matrix(MatrixWrap::Cpl(Rc::new(a.add(b.as_ref()))))));
                 }
                 (Matrix(MatrixWrap::Rat(a)), Matrix(MatrixWrap::Rat(b))) => {
                     return Ok(Lit(Matrix(MatrixWrap::Rat(Rc::new(a.add(b.as_ref()))))));
                 }
-                (Float(a), Matrix(MatrixWrap::Flt(b))) => {
+                (Cplx(a), Matrix(MatrixWrap::Cpl(b))) => {
                     let mut b = b.clone_data();
                     b.scale(a);
-                    return Ok(Lit(Matrix(MatrixWrap::Flt(Rc::new(b)))));
+                    return Ok(Lit(Matrix(MatrixWrap::Cpl(Rc::new(b)))));
                 }
                 (Rat(a), Matrix(MatrixWrap::Rat(b))) => {
                     let mut b = b.clone_data();
@@ -48,10 +49,10 @@ pub fn sub(args: ObjectPairItem, _: &mut Environment) -> Output {
     match args {
         List(pair) => match (&pair.first, &pair.second) {
             (Lit(a), Lit(b)) => match (a, b) {
-                (Float(a), Float(b)) => return Ok(Lit(Float(a - b))),
+                (Cplx(a), Cplx(b)) => return Ok(Lit(Cplx(*a - b))),
                 (Rat(a), Rat(b)) => return Ok(Lit(Rat(*a - b))),
-                (Matrix(MatrixWrap::Flt(a)), Matrix(MatrixWrap::Flt(b))) => {
-                    return Ok(Lit(Matrix(MatrixWrap::Flt(Rc::new(a.sub(b.as_ref()))))));
+                (Matrix(MatrixWrap::Cpl(a)), Matrix(MatrixWrap::Cpl(b))) => {
+                    return Ok(Lit(Matrix(MatrixWrap::Cpl(Rc::new(a.sub(b.as_ref()))))));
                 }
                 (Matrix(MatrixWrap::Rat(a)), Matrix(MatrixWrap::Rat(b))) => {
                     return Ok(Lit(Matrix(MatrixWrap::Rat(Rc::new(a.sub(b.as_ref()))))));
@@ -82,11 +83,11 @@ pub fn times(args: ObjectPairItem, _: &mut Environment) -> Output {
     match args {
         List(pair) => match (&pair.first, &pair.second) {
             (Lit(a), Lit(b)) => match (a, b) {
-                (Float(a), Float(b)) => return Ok(Lit(Float(a * b))),
+                (Cplx(a), Cplx(b)) => return Ok(Lit(Cplx(*a * b))),
                 (Rat(a), Rat(b)) => return Ok(Lit(Rat(*a * b))),
-                (Matrix(MatrixWrap::Flt(a)), Matrix(MatrixWrap::Flt(b))) => {
+                (Matrix(MatrixWrap::Cpl(a)), Matrix(MatrixWrap::Cpl(b))) => {
                     match a.dot(b.as_ref()) {
-                        Ok(r) => return Ok(Lit(Matrix(MatrixWrap::Flt(Rc::new(r))))),
+                        Ok(r) => return Ok(Lit(Matrix(MatrixWrap::Cpl(Rc::new(r))))),
                         Err(e) => return Err(EvalError::value(format!("{e}"))),
                     }
                 }
@@ -103,8 +104,8 @@ pub fn times(args: ObjectPairItem, _: &mut Environment) -> Output {
                         Rc::new(r)
                     }))));
                 }
-                (Float(a), Matrix(MatrixWrap::Flt(b))) => {
-                    return Ok(Lit(Matrix(MatrixWrap::Flt({
+                (Cplx(a), Matrix(MatrixWrap::Cpl(b))) => {
+                    return Ok(Lit(Matrix(MatrixWrap::Cpl({
                         let mut r = b.clone_data();
                         r.scale(a);
                         Rc::new(r)
@@ -122,7 +123,12 @@ pub fn devide(args: ObjectPairItem, _: &mut Environment) -> Output {
     match args {
         List(pair) => match (&pair.first, &pair.second) {
             (Lit(a), Lit(b)) => match (a, b) {
-                (Float(a), Float(b)) => return Ok(Lit(Float(a / b))),
+                (Cplx(a), Cplx(b)) => {
+                    if b.0 == 0.0 && b.1 == 0.0 {
+                        return Err(EvalError::zero_division(format!("{}/0+0j", a)))
+                    }
+                    return Ok(Lit(Cplx(*a / b)));
+                },
                 (Rat(a), Rat(b)) => {
                     if b.0 == 0 {
                         return Err(EvalError::zero_division(format!("{}/0", a)));
@@ -143,7 +149,7 @@ pub fn eq(args: ObjectPairItem, _: &mut Environment) -> Output {
             (Lit(a), Lit(b)) => match (a, b) {
                 (Rat(a), Rat(b)) => return Ok(Lit(Bool(a == b))),
                 (Nil, Nil) => return Ok(Lit(Bool(true))),
-                (Matrix(MatrixWrap::Flt(a)), Matrix(MatrixWrap::Flt(b))) => {
+                (Matrix(MatrixWrap::Cpl(a)), Matrix(MatrixWrap::Cpl(b))) => {
                     return Ok(Lit(Bool(a.as_ref() == b.as_ref())))
                 }
                 (Matrix(MatrixWrap::Rat(a)), Matrix(MatrixWrap::Rat(b))) => {
@@ -161,7 +167,7 @@ pub fn lt(args: ObjectPairItem, _: &mut Environment) -> Output {
     match args {
         List(pair) => match (&pair.first, &pair.second) {
             (Lit(a), Lit(b)) => match (a, b) {
-                (Float(a), Float(b)) => return Ok(Lit(Bool(a < b))),
+                (Cplx(a), Cplx(b)) => return Ok(Lit(Bool(a.re() < b.re()))),
                 (Rat(a), Rat(b)) => return Ok(Lit(Bool(a < b))),
                 (a, b) => return Err(EvalError::typ(format!("Can't compare `{}` and `{}`", a, b))),
             },
@@ -175,7 +181,7 @@ pub fn gt(args: ObjectPairItem, _: &mut Environment) -> Output {
     match args {
         List(pair) => match (&pair.first, &pair.second) {
             (Lit(a), Lit(b)) => match (a, b) {
-                (Float(a), Float(b)) => return Ok(Lit(Bool(a > b))),
+                (Cplx(a), Cplx(b)) => return Ok(Lit(Bool(a.re() > b.re()))),
                 (Rat(a), Rat(b)) => return Ok(Lit(Bool(a > b))),
                 (a, b) => return Err(EvalError::typ(format!("Can't compare `{}` and `{}`", a, b))),
             },
@@ -211,30 +217,37 @@ pub fn and(args: ObjectPairItem, _: &mut Environment) -> Output {
     }
 }
 
-pub fn to_float(args: ObjectPairItem, _: &mut Environment) -> Output {
+pub fn to_complex(args: ObjectPairItem, _: &mut Environment) -> Output {
     match args {
-        Lit(Rat(x)) => return Ok(Lit(Float(x.into()))),
+        Lit(Rat(x)) => return Ok(Lit(Cplx(Complex::from(f64::from(x))))),
         Lit(Matrix(MatrixWrap::Rat(m))) => {
-            let m: DataMatrix<f64> = m.clone_data().convert();
-            return Ok(Lit(Matrix(MatrixWrap::Flt(Rc::new(m)))));
+            let m: DataMatrix<Complex> = m.clone_data().convert();
+            return Ok(Lit(Matrix(MatrixWrap::Cpl(Rc::new(m)))));
         }
         other => {
             return Err(EvalError::typ(format!(
-                "Can only convert rational or rational matrix to float, not {}",
+                "Can only convert rational or rational matrix to complex, not {}",
                 other
             )))
         }
     }
 }
 
-pub const EXPORTS: [BuiltinFunction; 10] = [
+pub fn normal(args: ObjectPairItem, _: &mut Environment) -> Output {
+    match args {
+        Lit(Cplx(c)) => return Ok(Lit(Cplx(c.normal().into()))),
+        _ => return Err(EvalError::typ(format!("Can only calculate normal of a complex")))
+    }
+}
+
+pub const EXPORTS: [BuiltinFunction; 11] = [
     BuiltinFunction {
         f: &add,
         name: "+",
         argn: 2,
         help: indoc! {"
             Usage: (+ a b) -> type(a)
-            Add two numbers or two matrixes. They must have same kind of data type, rational or float.
+            Add two numbers or two matrixes. They must have same kind of data type, rational or complex.
             The latter matrix is truncated if it's larger, or is repeated by columns and rows if smaller.
             For example, [1 2 3; 4 5 6;] + [1 2; 4 5;] = [1+1 2+2 3+1; 4+4; 5+5, 6+4;] "},
     },
@@ -271,7 +284,8 @@ pub const EXPORTS: [BuiltinFunction; 10] = [
         argn: 2,
         help: indoc! {"
             Usage: (< a b) -> bool
-            Compare two numbers.  "},
+            Compare two numbers. 
+            If both are complexes, their real parts are compared. "},
     },
     BuiltinFunction {
         f: &gt,
@@ -279,7 +293,8 @@ pub const EXPORTS: [BuiltinFunction; 10] = [
         argn: 2,
         help: indoc! {"
             Usage: (> a b) -> bool
-            Compare two numbers.  "},
+            Compare two numbers.
+            If both are complexes, their real parts are compared. "},
     },
     BuiltinFunction {
         f: &eq,
@@ -287,7 +302,7 @@ pub const EXPORTS: [BuiltinFunction; 10] = [
         argn: 2,
         help: indoc! {"
             Usage: (= a b) -> bool
-            Compare two numbers.  "},
+            Compare two numbers.  "}
     },
     BuiltinFunction {
         f: &and,
@@ -306,12 +321,19 @@ pub const EXPORTS: [BuiltinFunction; 10] = [
             OR operation.  "},
     },
     BuiltinFunction {
-        f: &to_float,
-        name: "tofloat",
+        f: &to_complex,
+        name: "tocomplex",
         argn: 1,
         help: indoc! {"
-            Usage: (tofloat x: rational) -> float
-                   (tofloat x: matrix<rational>) -> matrix<float>
-            Convert rational to float.  "},
+            Usage: (tocomplex x: rational) -> complex
+                   (tocomplex x: matrix<rational>) -> matrix<complex>
+            Convert rational to complex.  "},
     },
+    BuiltinFunction {
+        f: &normal,
+        name: "normal",
+        argn: 1,
+        help: indoc! {"
+            Calculate the normal of a complex "}
+    }
 ];

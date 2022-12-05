@@ -1,5 +1,5 @@
 use crate::table::Table;
-use mat::{DataMatrix, Mat, Rational, rational};
+use mat::{DataMatrix, Mat, Rational, rational, Complex};
 use std::rc::Rc;
 
 /// Wrap two types of matrix: [`Rational`] and [`f64`] , and also the symbol table [`Table<Token>`]
@@ -7,7 +7,7 @@ use std::rc::Rc;
 #[derive(Debug)]
 pub enum MatrixWrap {
     Rat(Rc<dyn Mat<Item = Rational>>),
-    Flt(Rc<dyn Mat<Item = f64>>),
+    Cpl(Rc<dyn Mat<Item = Complex>>),
 }
 
 pub enum MatrixOrTable {
@@ -34,7 +34,7 @@ impl MatrixOrTable {
 impl Clone for MatrixWrap {
     fn clone(&self) -> Self {
         match self {
-            MatrixWrap::Flt(m) => MatrixWrap::Flt(Rc::new(m.clone_data())),
+            MatrixWrap::Cpl(m) => MatrixWrap::Cpl(Rc::new(m.clone_data())),
             MatrixWrap::Rat(m) => MatrixWrap::Rat(Rc::new(m.clone_data())),
         }
     }
@@ -49,7 +49,7 @@ pub use error::ParseMatrixError;
 #[derive(PartialEq, Eq)]
 enum ParsingMode {
     Rational,
-    Float,
+    Complex,
     Symbol,
     None,
 }
@@ -64,7 +64,7 @@ impl TryInto<MatrixOrTable> for &mut dyn Iterator<Item = &str> {
         let mut parsing_mode = ParsingMode::None;
 
         let mut rats: Vec<Rational> = Vec::new();
-        let mut floats: Vec<f64> = Vec::new();
+        let mut complexes: Vec<Complex> = Vec::new();
         let mut words: Vec<String> = Vec::new();
 
         while let Some(piece) = self.next() {
@@ -87,7 +87,10 @@ impl TryInto<MatrixOrTable> for &mut dyn Iterator<Item = &str> {
                             // rational
                             match parsing_mode {
                                 ParsingMode::Rational => rats.push(rat),
-                                ParsingMode::Float => floats.push(rat.into()),
+                                ParsingMode::Complex => {
+                                    let flt: f64 = rat.into();
+                                    complexes.push(flt.into());
+                                }
                                 ParsingMode::Symbol => {
                                     return Err(ParseMatrixError(format!(
                                         "Symbol table doesn't accept rational"
@@ -100,23 +103,23 @@ impl TryInto<MatrixOrTable> for &mut dyn Iterator<Item = &str> {
                             }
                         },
                         Err(rational::ParseError::NotARational) => {
-                            // if float
-                            if let Ok(flt) = other.parse() {
+                            // if complex
+                            if let Ok(cpl) = other.try_into() {
                                 match parsing_mode {
-                                    ParsingMode::Float => floats.push(flt),
+                                    ParsingMode::Complex => complexes.push(cpl),
                                     ParsingMode::Rational => {
-                                        floats = rats.iter().map(|&x| x.into()).collect();
-                                        floats.push(flt);
-                                        parsing_mode = ParsingMode::Float;
+                                        complexes = rats.iter().map(|&x| f64::from(x).into()).collect();
+                                        complexes.push(cpl);
+                                        parsing_mode = ParsingMode::Complex;
                                     }
                                     ParsingMode::Symbol => {
                                         return Err(ParseMatrixError(format!(
-                                            "Symbol table doesn't accept float"
+                                            "Symbol table doesn't accept complex"
                                         )))
                                     }
                                     ParsingMode::None => {
-                                        parsing_mode = ParsingMode::Float;
-                                        floats.push(flt);
+                                        parsing_mode = ParsingMode::Complex;
+                                        complexes.push(cpl);
                                     }
                                 }
                             // if symbol table
@@ -129,7 +132,7 @@ impl TryInto<MatrixOrTable> for &mut dyn Iterator<Item = &str> {
                                     }
                                     _ => {
                                         return Err(ParseMatrixError(format!(
-                                            "Symbol table doesn't accept float or rational"
+                                            "Symbol table doesn't accept complex or rational"
                                         )))
                                     }
                                 }
@@ -150,9 +153,9 @@ impl TryInto<MatrixOrTable> for &mut dyn Iterator<Item = &str> {
         cols = last_cols;
 
         match parsing_mode {
-            ParsingMode::Float => {
-                return Ok(MatrixOrTable::Matrix(MatrixWrap::Flt(Rc::new(
-                    DataMatrix::new(floats, rows, cols).unwrap(),
+            ParsingMode::Complex => {
+                return Ok(MatrixOrTable::Matrix(MatrixWrap::Cpl(Rc::new(
+                    DataMatrix::new(complexes, rows, cols).unwrap(),
                 ))))
             }
             ParsingMode::Rational => {
@@ -178,7 +181,7 @@ mod display {
             use MatrixWrap::*;
             match self {
                 Rat(m) => mat_print_buf(m.as_ref(), f),
-                Flt(m) => mat_print_buf(m.as_ref(), f),
+                Cpl(m) => mat_print_buf(m.as_ref(), f),
             }
         }
     }
@@ -205,17 +208,17 @@ mod test {
     }
 
     #[test]
-    fn test_parse_float() {
+    fn test_parse_complex() {
         let mw: MatrixOrTable = (&mut vec!["1", "1/1", ";", "2.5", "3", ";"].iter().map(|x| *x)
             as &mut dyn Iterator<Item = &str>)
             .try_into()
             .unwrap();
         match mw.matrix().unwrap() {
-            MatrixWrap::Flt(f) => assert_eq!(
-                f.as_ref() as &dyn Mat<Item = f64>,
-                &mat![1.0 1.0; 2.5 3.0;].convert() as &dyn Mat<Item = f64>
+            MatrixWrap::Cpl(f) => assert_eq!(
+                f.as_ref() as &dyn Mat<Item = Complex>,
+                &mat![1.0 1.0; 2.5 3.0;].convert() as &dyn Mat<Item = Complex>
             ),
-            _ => panic!("should be float"),
+            _ => panic!("should be complex"),
         }
     }
 

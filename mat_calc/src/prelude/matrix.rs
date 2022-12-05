@@ -20,8 +20,8 @@ use crate::mat_wrap::MatrixWrap;
 
 pub fn inv(args: ObjectPairItem, _: &mut Environment) -> Output {
     match args {
-        Lit(Matrix(MatrixWrap::Flt(m))) => match alg::inv(&mut m.clone_data()) {
-            Ok(r) => return Ok(Lit(Matrix(MatrixWrap::Flt(Rc::new(r))))),
+        Lit(Matrix(MatrixWrap::Cpl(m))) => match alg::inv(&mut m.clone_data()) {
+            Ok(r) => return Ok(Lit(Matrix(MatrixWrap::Cpl(Rc::new(r))))),
             Err(e) => return Err(EvalError::value(format!("{e}"))),
         },
         Lit(Matrix(MatrixWrap::Rat(m))) => match alg::inv(&mut m.clone_data()) {
@@ -29,16 +29,16 @@ pub fn inv(args: ObjectPairItem, _: &mut Environment) -> Output {
             Err(e) => return Err(EvalError::value(format!("{e}"))),
         },
         Lit(Rat(r)) => return Ok(Lit(Rat(r.inv()))),
-        Lit(Float(f)) => return Ok(Lit(Float(f.inv()))),
+        Lit(Cplx(f)) => return Ok(Lit(Cplx(f.inv()))),
         other => return Err(EvalError::typ(format!("Can't inv {other}"))),
     }
 }
 
 pub fn eliminate(args: ObjectPairItem, _: &mut Environment) -> Output {
     match args {
-        Lit(Matrix(MatrixWrap::Flt(m))) => {
+        Lit(Matrix(MatrixWrap::Cpl(m))) => {
             let r = m.clone_data().eliminated();
-            return Ok(Lit(Matrix(MatrixWrap::Flt(Rc::new(r)))));
+            return Ok(Lit(Matrix(MatrixWrap::Cpl(Rc::new(r)))));
         }
         Lit(Matrix(MatrixWrap::Rat(m))) => {
             let r = m.clone_data().eliminated();
@@ -55,9 +55,9 @@ pub fn reduce(args: ObjectPairItem, _: &mut Environment) -> Output {
                 "You can only gussian eliminate an item a time".to_string(),
             ))
         }
-        Lit(Matrix(MatrixWrap::Flt(m))) => {
+        Lit(Matrix(MatrixWrap::Cpl(m))) => {
             let r = m.clone_data().eliminated().reduced();
-            return Ok(Lit(Matrix(MatrixWrap::Flt(Rc::new(r)))));
+            return Ok(Lit(Matrix(MatrixWrap::Cpl(Rc::new(r)))));
         }
         Lit(Matrix(MatrixWrap::Rat(m))) => {
             let r = m.clone_data().eliminated().reduced();
@@ -69,7 +69,7 @@ pub fn reduce(args: ObjectPairItem, _: &mut Environment) -> Output {
 
 pub fn rank(args: ObjectPairItem, _: &mut Environment) -> Output {
     match args {
-        Lit(Matrix(MatrixWrap::Flt(m))) => {
+        Lit(Matrix(MatrixWrap::Cpl(m))) => {
             let r = m.clone_data().eliminated().rank() as i32;
             return Ok(Lit(Rat(r.into())));
         }
@@ -87,12 +87,12 @@ pub fn rank(args: ObjectPairItem, _: &mut Environment) -> Output {
 
 pub fn det(args: ObjectPairItem, _: &mut Environment) -> Output {
     match args {
-        Lit(Matrix(MatrixWrap::Flt(m))) => {
+        Lit(Matrix(MatrixWrap::Cpl(m))) => {
             let d = match alg::det(m.as_ref()) {
                 Ok(d) => d,
                 Err(e) => return Err(EvalError::value(format!("{e}"))),
             };
-            return Ok(Lit(Float(d)));
+            return Ok(Lit(Cplx(d)));
         }
         Lit(Matrix(MatrixWrap::Rat(m))) => {
             let d = match alg::det(m.as_ref()) {
@@ -111,16 +111,16 @@ pub fn det(args: ObjectPairItem, _: &mut Environment) -> Output {
 pub fn solve(args: ObjectPairItem, _: &mut Environment) -> Output {
     match args {
         List(pair) => match (&pair.first, &pair.second) {
-            (Lit(Matrix(MatrixWrap::Flt(a))), Lit(Matrix(MatrixWrap::Flt(b)))) => {
+            (Lit(Matrix(MatrixWrap::Cpl(a))), Lit(Matrix(MatrixWrap::Cpl(b)))) => {
                 let r = alg::solve(&mut a.clone_data(), &mut b.clone_data())
                     .map_err(|e| EvalError::value(format!("{e}")))?;
                 match r {
                     SolveResult::None => return Ok(Lit(Nil)),
-                    SolveResult::Single(s) => return Ok(Lit(Matrix(MatrixWrap::Flt(Rc::new(s))))),
+                    SolveResult::Single(s) => return Ok(Lit(Matrix(MatrixWrap::Cpl(Rc::new(s))))),
                     SolveResult::Infinite { general, special } => {
                         return Ok(List(Box::new(ObjectPair {
-                            first: Lit(Matrix(MatrixWrap::Flt(Rc::new(general)))),
-                            second: Lit(Matrix(MatrixWrap::Flt(Rc::new(special)))),
+                            first: Lit(Matrix(MatrixWrap::Cpl(Rc::new(general)))),
+                            second: Lit(Matrix(MatrixWrap::Cpl(Rc::new(special)))),
                         })));
                     }
                 }
@@ -156,8 +156,8 @@ pub fn solve(args: ObjectPairItem, _: &mut Environment) -> Output {
 
 pub fn transpose(args: ObjectPairItem, _: &mut Environment) -> Output {
     match args {
-        Lit(Matrix(MatrixWrap::Flt(m))) => {
-            return Ok(Lit(Matrix(MatrixWrap::Flt(Rc::new(
+        Lit(Matrix(MatrixWrap::Cpl(m))) => {
+            return Ok(Lit(Matrix(MatrixWrap::Cpl(Rc::new(
                 m.clone_data().transposed(),
             )))));
         }
@@ -172,8 +172,8 @@ pub fn transpose(args: ObjectPairItem, _: &mut Environment) -> Output {
 
 pub fn trace(args: ObjectPairItem, _: &mut Environment) -> Output {
     match args {
-        Lit(Matrix(MatrixWrap::Flt(m))) => {
-            return Ok(Lit(Float(
+        Lit(Matrix(MatrixWrap::Cpl(m))) => {
+            return Ok(Lit(Cplx(
                 alg::trace(m.as_ref()).map_err(|e| EvalError::value(format!("{e}")))?,
             )));
         }
@@ -192,9 +192,9 @@ pub fn trace(args: ObjectPairItem, _: &mut Environment) -> Output {
 
 pub fn null_space(args: ObjectPairItem, _: &mut Environment) -> Output {
     match args {
-        Lit(Matrix(MatrixWrap::Flt(m))) => {
+        Lit(Matrix(MatrixWrap::Cpl(m))) => {
             if let Some(ns) = m.clone_data().eliminated().null_space() {
-                return Ok(Lit(Matrix(MatrixWrap::Flt(Rc::new(ns)))));
+                return Ok(Lit(Matrix(MatrixWrap::Cpl(Rc::new(ns)))));
             } else {
                 return Ok(Lit(Nil));
             }
@@ -259,24 +259,24 @@ pub fn concat(args: ObjectPairItem, _: &mut Environment) -> Output {
             }
 
             match t.data[0] {
-                Lit(Matrix(MatrixWrap::Flt(_))) => {
+                Lit(Matrix(MatrixWrap::Cpl(_))) => {
                     let mut mt_data = Vec::with_capacity(t.data.len());
                     for o in t.data.iter() {
                         match o {
-                            Lit(Matrix(MatrixWrap::Flt(m))) => mt_data.push(m.as_ref()),
-                            _ => return Err(EvalError::typ(format!("Can only concat matrix with same type of matrix (rational or float)")))
+                            Lit(Matrix(MatrixWrap::Cpl(m))) => mt_data.push(m.as_ref()),
+                            _ => return Err(EvalError::typ(format!("Can only concat matrix with same type of matrix (rational or complex)")))
                         }
                     }
                     let concated = clone_concated(mt_data, t.rows, t.cols)
                         .map_err(|e| EvalError::value(format!("{e}")))?;
-                    return Ok(Lit(Matrix(MatrixWrap::Flt(Rc::new(concated)))));
+                    return Ok(Lit(Matrix(MatrixWrap::Cpl(Rc::new(concated)))));
                 }
                 Lit(Matrix(MatrixWrap::Rat(_))) => {
                     let mut mt_data = Vec::with_capacity(t.data.len());
                     for o in t.data.iter() {
                         match o {
                             Lit(Matrix(MatrixWrap::Rat(m))) => mt_data.push(m.as_ref()),
-                            _ => return Err(EvalError::typ(format!("Can only concat matrix with same type of matrix (rational or float)")))
+                            _ => return Err(EvalError::typ(format!("Can only concat matrix with same type of matrix (rational or complex)")))
                         }
                     }
                     let concated = clone_concated(mt_data, t.rows, t.cols)
@@ -297,7 +297,7 @@ pub fn concat(args: ObjectPairItem, _: &mut Environment) -> Output {
 pub fn get(args: ObjectPairItem, _: &mut Environment) -> Output {
     match args {
         List(box ObjectPair {
-            first: Lit(Matrix(MatrixWrap::Flt(m))),
+            first: Lit(Matrix(MatrixWrap::Cpl(m))),
             second:
                 List(box ObjectPair {
                     first: Lit(Rat(i)),
@@ -310,7 +310,7 @@ pub fn get(args: ObjectPairItem, _: &mut Environment) -> Output {
                 )));
             }
             if let (Ok(ui), Ok(uj)) = (i.0.try_into(), j.0.try_into()) {
-                return Ok(Lit(Float(
+                return Ok(Lit(Cplx(
                     *m.get(ui, uj)
                         .map_err(|e| EvalError::value(format!("{e}")))?,
                 )));

@@ -5,7 +5,6 @@ use std::rc::Rc;
 
 type Output = Result<ObjectPairItem, EvalError>;
 
-mod constants;
 mod list;
 mod matrix;
 mod misc;
@@ -26,10 +25,6 @@ pub fn inject_builtins(frame: &mut Frame) {
             func.name.to_string(),
             ObjectPairItem::BuiltinFunc(Rc::new(func)),
         );
-    }
-
-    for (val, name) in constants::EXPORTS.into_iter() {
-        frame.insert(name.to_string(), ObjectPairItem::Lit(val));
     }
 }
 

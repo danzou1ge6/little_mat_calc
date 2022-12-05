@@ -1,6 +1,7 @@
 pub mod token {
     use crate::{mat_wrap::MatrixWrap, table::Table};
     use mat::Rational;
+    use mat::Complex;
     use mat::rational;
     use std::fmt;
 
@@ -14,8 +15,8 @@ pub mod token {
         /// Variables, keywords, etc.
         /// For example, `a`, `define`, `+`
         Word(String),
-        /// Float, eg. `1.2`
-        Float(f64),
+        /// COmplex, eg. `1.2 + 2j`
+        Cplx(Complex),
         /// Matrix
         Matrix(MatrixWrap),
         /// String
@@ -33,7 +34,7 @@ pub mod token {
             match self {
                 Rat(r) => r.fmt(f),
                 Word(w) => write!(f, "{}", w),
-                Float(fl) => write!(f, "{}", fl),
+                Cplx(fl) => write!(f, "{}", fl),
                 Matrix(m) => write!(f, "{m}"),
                 Table(t) => write!(f, "{t}"),
                 Str(s) => write!(f, "{s}"),
@@ -63,8 +64,11 @@ pub mod token {
                     return Err(super::ParseError { msg: format!("Can't devide by zero") }),
                 Ok(r) => return Ok(Token::Rat(r))
             }
-            if let Ok(float) = s.parse::<f64>() {
-                return Ok(Token::Float(float));
+            if let Ok(complex) = Complex::try_from(s) {
+                return Ok(Token::Cplx(complex));
+            }
+            if let Ok(flt) = s.parse::<f64>() {
+                return Ok(Token::Cplx(Complex::from(flt)));
             }
             if s == "nil" {
                 return Ok(Token::Nil);
