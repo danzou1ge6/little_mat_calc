@@ -364,7 +364,7 @@ pub fn eigenmat(args: ObjectPairItem, _: &mut Environment) -> Output {
         Lit(Matrix(MatrixWrap::Cpl(m))) => {
             let m: DataMatrix<f64> = m.clone_data().convert();
             let solver = alg::EigenValueSolver::new(m)?;
-            let m = solver.eigen_mat(1e-3, 9999);
+            let m = solver.eigen_mat(1e-3, 999);
             return Ok(Lit(Matrix(MatrixWrap::Cpl(Rc::new(m.convert())))));
         },
         _ => return Err(EvalError::typ(format!("Can only QR decomposite a complex matrix with real values")))
@@ -376,7 +376,7 @@ pub fn eigenvalues(args: ObjectPairItem, _: &mut Environment) -> Output {
         Lit(Matrix(MatrixWrap::Cpl(m))) => {
             let m: DataMatrix<f64> = m.clone_data().convert();
             let solver = alg::EigenValueSolver::new(m)?;
-            let eigen_vals = solver.eigen_values(1e-3, 9999);
+            let eigen_vals = solver.eigen_values(1e-3, 999);
             let len = eigen_vals.len();
             let eigen_vals = DataMatrix::new(eigen_vals, len, 1).unwrap();
             return Ok(Lit(Matrix(MatrixWrap::Cpl(Rc::new(eigen_vals)))));
