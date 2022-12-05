@@ -311,8 +311,7 @@ pub fn get(args: ObjectPairItem, _: &mut Environment) -> Output {
             }
             if let (Ok(ui), Ok(uj)) = (i.0.try_into(), j.0.try_into()) {
                 return Ok(Lit(Cplx(
-                    *m.get(ui, uj)
-                        .map_err(|e| EvalError::value(format!("{e}")))?,
+                    *m.get(ui, uj) ?,
                 )));
             } else {
                 return Err(EvalError::value(format!("Bad index")));
@@ -333,8 +332,7 @@ pub fn get(args: ObjectPairItem, _: &mut Environment) -> Output {
             }
             if let (Ok(ui), Ok(uj)) = (i.0.try_into(), j.0.try_into()) {
                 return Ok(Lit(Rat(*m
-                    .get(ui, uj)
-                    .map_err(|e| EvalError::value(format!("{e}")))?)));
+                    .get(ui, uj) ?)));
             } else {
                 return Err(EvalError::value(format!("Bad index")));
             }
@@ -347,7 +345,47 @@ pub fn get(args: ObjectPairItem, _: &mut Environment) -> Output {
     }
 }
 
-pub const EXPORTS: [BuiltinFunction; 12] = [
+pub fn qr(args: ObjectPairItem, _: &mut Environment) -> Output {
+    match args {
+        Lit(Matrix(MatrixWrap::Cpl(m))) => {
+            let mut r: DataMatrix<f64> = m.clone_data().convert();
+            let q = alg::qr(&mut r)?;
+            return Ok(List(Box::new(ObjectPair {
+                first: Lit(Matrix(MatrixWrap::Cpl(Rc::new(q.convert())))),
+                second: Lit(Matrix(MatrixWrap::Cpl(Rc::new(r.convert()))))
+            })));
+        },
+        _ => return Err(EvalError::typ(format!("Can only QR decomposite a complex matrix with real values")))
+    }
+}
+
+pub fn eigenmat(args: ObjectPairItem, _: &mut Environment) -> Output {
+    match args {
+        Lit(Matrix(MatrixWrap::Cpl(m))) => {
+            let m: DataMatrix<f64> = m.clone_data().convert();
+            let solver = alg::EigenValueSolver::new(m)?;
+            let m = solver.eigen_mat(1e-3, 9999);
+            return Ok(Lit(Matrix(MatrixWrap::Cpl(Rc::new(m.convert())))));
+        },
+        _ => return Err(EvalError::typ(format!("Can only QR decomposite a complex matrix with real values")))
+    }
+}
+
+pub fn eigenvalues(args: ObjectPairItem, _: &mut Environment) -> Output {
+    match args{ 
+        Lit(Matrix(MatrixWrap::Cpl(m))) => {
+            let m: DataMatrix<f64> = m.clone_data().convert();
+            let solver = alg::EigenValueSolver::new(m)?;
+            let eigen_vals = solver.eigen_values(1e-3, 9999);
+            let len = eigen_vals.len();
+            let eigen_vals = DataMatrix::new(eigen_vals, len, 1).unwrap();
+            return Ok(Lit(Matrix(MatrixWrap::Cpl(Rc::new(eigen_vals)))));
+        },
+        _ => return Err(EvalError::typ(format!("Can only calculate eigenvalues of a complex matrix with real values")))
+    }
+}
+
+pub const EXPORTS: [BuiltinFunction; 15] = [
     BuiltinFunction {
         f: &inv,
         argn: 1,
@@ -436,4 +474,37 @@ pub const EXPORTS: [BuiltinFunction; 12] = [
             Usage: (get m: matrix i: rational j: rational)
             Get the `(i, j)` element of matrix `m`.  "},
     },
+    BuiltinFunction {
+        f: &qr,
+        name: "qr",
+        argn: 1,
+        help: indoc! {"
+            Calculate the QR decomposition of a matrix.
+            The matrix must have data type complex, but this algorithim can't handle
+            complex matrixes, so the input matrix is cast into real matrix by taking
+            the real part of each element.
+            Returns `(Q )R`."}
+    },
+    BuiltinFunction {
+        f: &eigenmat,
+        name: "eigenmat",
+        argn: 1,
+        help: indoc! {"
+            Calculate the eigenvalues of a matrix. The matrix must be complex, 
+            but only the real part of each element is taken due to limitation of
+            the algorithim.
+            This function returns a matrix, where elements below the diagnol are
+            zeros, and any 1x1 block on the diagnol is a real eigenvalue, and
+            any 2x2 block on the diagnol represents two adjoint complex eigenvalues"}
+    },
+    BuiltinFunction {
+        f: &eigenvalues,
+        name: "eigenvalues",
+        argn: 1,
+        help: indoc! {"
+            Calculate and return the eigenvalues of a matrix in the form of a column
+            vector.
+            The matrix must be complex, but only the real part of each element is
+            taken."}
+    }
 ];

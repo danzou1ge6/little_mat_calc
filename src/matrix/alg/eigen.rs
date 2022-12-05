@@ -1,4 +1,6 @@
+use crate::Complex;
 use crate::{matrix::Mat, DataMatrix, error::MatError, SliceMatrix};
+use crate::element::AddZero;
 
 use super::{col_normal_unchecked, col_normal_sqr_unchecked};
 
@@ -73,6 +75,7 @@ pub fn hessengerb(m: &mut dyn Mat<Item = f64>) -> Result<(), MatError> {
 
 /// Perform the QR dicomposition: 
 /// Transform `m` to `R` and return `Q`
+/// Where `R` is upper-triangle and `Q` is othogonal
 pub unsafe fn qr_unchecked(m: &mut dyn Mat<Item = f64>) -> DataMatrix<f64> {
     let n = m.rows();
     let q = DataMatrix::identity(n);
@@ -108,6 +111,7 @@ pub unsafe fn qr_unchecked(m: &mut dyn Mat<Item = f64>) -> DataMatrix<f64> {
     q
 }
 
+/// Check the dimension of the input matrix, then call `qr_unchecked`
 pub fn qr(m: &mut dyn Mat<Item = f64>) -> Result<DataMatrix<f64>, MatError> {
     if m.dimensions() == (0, 0) { return Err(MatError::EmptyMatrix); }
     if !m.is_square() {
@@ -117,10 +121,16 @@ pub fn qr(m: &mut dyn Mat<Item = f64>) -> Result<DataMatrix<f64>, MatError> {
     Ok(unsafe { qr_unchecked(m) })
 }
 
+fn eigval_2dim(a: f64, b: f64, c: f64, d: f64) -> (Complex, Complex) {
+    let re = (a + d) / 2.0;
+    let im = (2.0 * a * d - a * a - d * d - 4.0 * b * c).sqrt() / 2.0;
+    (Complex(re, im), Complex(re, -im))
+}
+
 
 /// To solve eigen values
 pub struct EigenValueSolver {
-    mat: DataMatrix<f64>,
+    pub mat: DataMatrix<f64>,
 }
 
 impl EigenValueSolver {
@@ -147,15 +157,44 @@ impl EigenValueSolver {
         v
     }
     /// Iter until the delta of elements on the diagnol is smaller than `epsilon`
-    /// and returns [`Ok`] or, after a `max_iter`, returns [`Err`]
-    pub fn eigens(&mut self, epsilon: f64, max_iter: usize) -> Result<(), ()> {
+    /// or, after a `max_iter`, then return the matrix
+    pub fn eigen_mat(mut self, epsilon: f64, max_iter: usize) -> DataMatrix<f64>{
         let mut cnt = 0;
         while let Some(delta) = self.next() {
             if delta < epsilon { break; }
-            if cnt > max_iter { return Err(()) }
+            if cnt > max_iter { break; }
             cnt += 1;
         } 
-        Ok(())
+        self.mat
+    }
+    /// Call `eigen_mat` first, then calculate eigen values from the result of
+    /// `eigen_mat`
+    pub fn eigen_values(self, epsilon: f64, max_iter: usize) -> Vec<Complex> {
+
+        let mat = self.eigen_mat(epsilon, max_iter);
+
+        let n = mat.rows();
+        let mut k = 0;
+        let mut eigvals = Vec::new();
+        unsafe {
+            while k < n  {
+                if k < n - 1 && !mat.get_unchecked(k + 1, k).is_add_zero() {
+                    let a = mat.get_unchecked(k, k);
+                    let b = mat.get_unchecked(k, k + 1);
+                    let c = mat.get_unchecked(k + 1, k);
+                    let d = mat.get_unchecked(k + 1, k + 1);
+                    let (ev1, ev2) = eigval_2dim(*a, *b, *c, *d);
+                    eigvals.push(ev1);
+                    eigvals.push(ev2);
+                    k += 2;
+                } else {
+                    eigvals.push(Complex::from(*mat.get_unchecked(k, k)));
+                    k += 1;
+                }
+            }
+        }
+
+        eigvals
     }
 }
 
@@ -217,15 +256,29 @@ mod test {
     }
 
     #[test]
-    fn test_eigenvalue() {
+    fn test_eigen() {
         let m = mat_![1.0 4.0; 5.0 2.0;];
-        let mut es = EigenValueSolver::new(m).unwrap();
+        let es = EigenValueSolver::new(m).unwrap();
 
-
-        es.eigens(1e-6, 999).unwrap();
-        let mut evs = es.read_diag();
+        let r =  es.eigen_mat(1e-6, 999);
+        let mut evs = vec![
+            r.get(0, 0).unwrap(),
+            r.get(1, 1).unwrap()
+        ];
         if evs[0] > evs[1] { evs.swap(0, 1) };
         assert!((evs[0] - (-3.0)).abs() < 1e-2);
         assert!((evs[1] - 6.0).abs() < 1e-2)
+    }
+
+    #[test]
+    fn test_eigenvals() {
+        let m = mat_![3.0 5.0;-1.0 -1.0;];
+        let es = EigenValueSolver::new(m).unwrap();
+
+        let mut evs = es.eigen_values(1e-2, 999);
+        if evs[0].im() > evs[1].im() { evs.swap(0, 1) };
+        assert!((evs[0] - &Complex(1.0, -1.0)).normal() < 1e-2);
+        assert!((evs[1] - &Complex(1.0, 1.0)).normal() < 1e-2)
+ 
     }
 }

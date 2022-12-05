@@ -79,11 +79,11 @@ impl DivAssign<&Self> for Complex {
 impl Display for Complex {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         if self.1.is_add_zero() {
-            write!(f, "{}", self.0)
+            write!(f, "{:.5}", self.0)
         } else if self.0.is_add_zero() {
-            write!(f, "{}j", self.1)
+            write!(f, "{:.5}j", self.1)
         } else {
-            write!(f, "{}+{}j", self.0, self.1)
+            write!(f, "{:.5}+{:.5}j", self.0, self.1)
         }
     }
 }
@@ -123,6 +123,12 @@ impl From<f64> for Complex {
 impl From<Rational> for Complex {
     fn from(value: Rational) -> Self {
         f64::from(value).into()
+    }
+}
+
+impl From<Complex> for f64 {
+    fn from(value: Complex) -> Self {
+        value.re()
     }
 }
 

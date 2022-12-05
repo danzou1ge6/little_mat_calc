@@ -1,3 +1,5 @@
+use mat::error::MatError;
+
 #[derive(Debug)]
 pub enum EvalError {
     SyntaxError(Vec<String>),
@@ -74,3 +76,9 @@ impl std::fmt::Display for EvalError {
 }
 
 impl std::error::Error for EvalError {}
+
+impl From<MatError> for EvalError {
+    fn from(value: MatError) -> Self {
+        Self::value(format!("{value}"))
+    }
+}
