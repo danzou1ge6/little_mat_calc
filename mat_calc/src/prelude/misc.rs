@@ -14,9 +14,9 @@ LITERALS
     - numbers, which are further categories into
         - rational (integers are included), for example `1/3`, `2`
         - complex (floats are included), for example `0.2` `0.2 + 3.2j`
-          complex is composed of two float, and float is considered zero
+          A complex is composed of two float, and float is considered zero
           if it's smaller than 1e-6
-    - matrixes, which can consist of rational elements or float elements
+    - matrixes, which can consist of rational elements or complex elements
       matrixes are represented by brackets, for example
         `[1 2; 3 4;]`
       `;` is used to sperate rows

@@ -107,6 +107,9 @@ impl TryFrom<&str> for Complex {
                 return Ok(Complex::new(0.0, *im));
             }
         }
+        if let Ok(flt) = val.parse() {
+            return Ok(Complex::new(flt, 0.0));
+        }
         return Err(());
     }
 

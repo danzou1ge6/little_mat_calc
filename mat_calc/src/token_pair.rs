@@ -67,9 +67,6 @@ pub mod token {
             if let Ok(complex) = Complex::try_from(s) {
                 return Ok(Token::Cplx(complex));
             }
-            if let Ok(flt) = s.parse::<f64>() {
-                return Ok(Token::Cplx(Complex::from(flt)));
-            }
             if s == "nil" {
                 return Ok(Token::Nil);
             }
