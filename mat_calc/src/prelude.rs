@@ -31,7 +31,9 @@ pub fn inject_builtins(frame: &mut Frame) {
 /// Defines some scheme functions
 pub const PRELUDE_SRC: &'static str = indoc! {"
 (
-# Get the last item of a list
+(def _help_last \"Get the last item of a list, usually for evaluating multiple
+expression and returning the last one in a function
+\")
 (def (last x)
     (if (= nil (cdr x))
         (car x)
@@ -40,6 +42,7 @@ pub const PRELUDE_SRC: &'static str = indoc! {"
 )
 
 # abs
+(def _help_abs \"Get the absolute value of a rational\")
 (def (abs x)
     (if (< x 0)
         (- 0 x)
@@ -48,18 +51,44 @@ pub const PRELUDE_SRC: &'static str = indoc! {"
 )
 
 # pow
+(def _help_pow \"Usage: (pow x n) Calculate power of `x` by `n`\")
 (def (pow x n)
     (if (< n 2)
         x
         (* x (pow x (- n 1)))
     )
 )
+
+# eigen values and eigen vectors
+(def _help_eigvec \"Get the eigen vectors of a matrix, repeated ones aren't deleted\")
+(def (eigvec x) (last
+    (def eigvals (eigval x))
+    (def (_eigvec x vals n)
+        (if (< n (- (car (dim vals)) 1))
+            (last
+                (def later (_eigvec x vals (+ n 1)))
+                (def this-eigval (get vals (n 0)))
+                (def this (nspace (- x (* this-eigval (ci (car (dim x)))))))
+                (concat [later this;])
+                nil
+            )
+            (last
+                (def this-eigval (get vals (n 0)))
+                (nspace (- x (* this-eigval (ci (car (dim x))))))
+                nil
+            )
+        )
+    )
+    (_eigvec x eigvals 0)
+    nil
+))
 )"
 };
 
 pub fn get_prelude_src() -> String {
-    PRELUDE_SRC
+    let filtered_lines: Vec<&str> = PRELUDE_SRC
         .lines()
         .filter(|line| !line.starts_with('#'))
-        .collect()
+        .collect();
+    filtered_lines.join("\n")
 }
