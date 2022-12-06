@@ -227,7 +227,23 @@ pub fn ridentity(args: ObjectPairItem, _: &mut Environment) -> Output {
                 ))))));
             }
         }
-        _ => return Err(EvalError::typ(format!("Can only transpose a matrix"))),
+        _ => return Err(EvalError::typ(format!("Argument takes a postive integer"))),
+    }
+}
+pub fn cidentity(args: ObjectPairItem, _: &mut Environment) -> Output {
+    match args {
+        Lit(Rat(r)) => {
+            if r.1 != 1 || r.0 < 0 {
+                return Err(EvalError::value(
+                    "Need an positive integer, not a fraction".to_string(),
+                ));
+            } else {
+                return Ok(Lit(Matrix(MatrixWrap::Cpl(Rc::new(DataMatrix::identity(
+                    r.0.try_into().unwrap(),
+                ))))));
+            }
+        }
+        _ => return Err(EvalError::typ(format!("Argument takes a positive integer"))),
     }
 }
 
@@ -405,7 +421,7 @@ pub fn diag(args: ObjectPairItem, _: &mut Environment) -> Output {
     }
 }
 
-pub const EXPORTS: [BuiltinFunction; 16] = [
+pub const EXPORTS: [BuiltinFunction; 17] = [
     BuiltinFunction {
         f: &inv,
         argn: 1,
@@ -446,27 +462,27 @@ pub const EXPORTS: [BuiltinFunction; 16] = [
     BuiltinFunction {
         f: &transpose,
         argn: 1,
-        name: "transpose",
+        name: "tp",
         help: "Transpose a matrix.",
     },
     BuiltinFunction {
         f: &reduce,
         argn: 1,
-        name: "reduce",
+        name: "rref",
         help: "Calculate the Reduced Upper Echolon Form of a matrix",
     },
     BuiltinFunction {
         f: &trace,
         argn: 1,
-        name: "trace",
+        name: "tr",
         help: "Calculate the trace of a matrix",
     },
     BuiltinFunction {
         f: &null_space,
         argn: 1,
-        name: "nullspace",
+        name: "nspace",
         help: indoc! {"
-            Usage: (nullspace x: matrix) -> nil | matrix
+            Usage: (nspace x: matrix) -> nil | matrix
             Calculates the null space of a matrix, returning
             - nil if the null space only consists of {0}
             - a matrix containing a basis for the null space "},
@@ -474,8 +490,14 @@ pub const EXPORTS: [BuiltinFunction; 16] = [
     BuiltinFunction {
         f: &ridentity,
         argn: 1,
-        name: "ridentity",
+        name: "ri",
         help: "Returns a rational identity matrix of given row number",
+    },
+    BuiltinFunction {
+        f: &cidentity,
+        argn: 1,
+        name: "ci",
+        help: "Returns a complex (float) identity matrix of given row number",
     },
     BuiltinFunction {
         f: &concat,
@@ -503,11 +525,11 @@ pub const EXPORTS: [BuiltinFunction; 16] = [
             The matrix must have data type complex, but this algorithim can't handle
             complex matrixes, so the input matrix is cast into real matrix by taking
             the real part of each element.
-            Returns `(Q )R`."}
+            Returns `(Q R)`."}
     },
     BuiltinFunction {
         f: &eigenmat,
-        name: "eigenmat",
+        name: "eigmat",
         argn: 1,
         help: indoc! {"
             Calculate the eigenvalues of a matrix. The matrix must be complex, 
@@ -519,7 +541,7 @@ pub const EXPORTS: [BuiltinFunction; 16] = [
     },
     BuiltinFunction {
         f: &eigenvalues,
-        name: "eigenvalues",
+        name: "eigval",
         argn: 1,
         help: indoc! {"
             Calculate and return the eigenvalues of a matrix in the form of a column

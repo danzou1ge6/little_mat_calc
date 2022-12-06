@@ -76,8 +76,9 @@ pub fn help(args: ObjectPairItem, _: &mut Environment) -> Output {
         Lit(Rat(Rational(1, 1))) => {
             let names: Vec<&str> = all_builtins().map(|b| b.name).collect();
             return Ok(Lit(Str(format!(
-                "{}\nUse `(help <name>)` to get detailed information of builtin `<name>`",
-                names.join(" ")
+                "LIST OF AVAILABLE BUILTINS\n{}\n{}",
+                names.join(" "),
+                "Use `(help <name>)` to get detailed information of builtin `<name>`"
             ))));
         }
         _ => {
@@ -134,7 +135,7 @@ pub const EXPORTS: [BuiltinFunction; 3] = [
         f: &help,
         name: "help",
         argn: 1,
-        help: "Display help information on builtins.",
+        help: "Display help information on syntax and builtins.",
     },
     BuiltinFunction {
         f: &maxrecur,

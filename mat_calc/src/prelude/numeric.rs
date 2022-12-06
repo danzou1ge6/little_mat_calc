@@ -322,11 +322,11 @@ pub const EXPORTS: [BuiltinFunction; 11] = [
     },
     BuiltinFunction {
         f: &to_complex,
-        name: "tocomplex",
+        name: "toc",
         argn: 1,
         help: indoc! {"
-            Usage: (tocomplex x: rational) -> complex
-                   (tocomplex x: matrix<rational>) -> matrix<complex>
+            Usage: (toc x: rational) -> complex
+                   (toc x: matrix<rational>) -> matrix<complex>
             Convert rational to complex.  "},
     },
     BuiltinFunction {
