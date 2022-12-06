@@ -67,7 +67,9 @@ impl MulAssign<&Self> for Complex {
 impl Div<&Self> for Complex {
     type Output = Self;
     fn div(self, rhs: &Self) -> Self::Output {
-        self.mul(&rhs.inv())
+        let n = rhs.normal2();
+        let inv = Complex(rhs.re() / n, -rhs.im() / n);
+        self.mul(&inv)
     }
 }
 impl DivAssign<&Self> for Complex {
