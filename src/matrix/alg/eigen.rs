@@ -45,6 +45,10 @@ pub unsafe fn hessenberg_unchecked(m: &mut dyn Mat<Item = f64>) {
 
     for k in 1..n - 1 {
         let v = SliceMatrix::new_unchecked(m, k, n - k, k - 1, 1);
+
+        // If `v` is zero, skip the transoformation of this slice
+        if col_normal_sqr_unchecked(&v, 0).is_add_zero() { continue; }
+
         let h = householder_unchecked(&v);
 
         let mut b = SliceMatrix::new_unchecked(m, 0, k, k, n - k);
@@ -82,6 +86,9 @@ pub unsafe fn qr_unchecked(m: &mut dyn Mat<Item = f64>) -> DataMatrix<f64> {
 
     for k in 0..n - 1 {
         let v = SliceMatrix::new_unchecked(m, k, n - k, k, 1);
+
+        if col_normal_sqr_unchecked(&v, 0).is_add_zero() { continue; }
+
         let h = householder_unchecked(&v);
 
         {
@@ -123,8 +130,12 @@ pub fn qr(m: &mut dyn Mat<Item = f64>) -> Result<DataMatrix<f64>, MatError> {
 
 fn eigval_2dim(a: f64, b: f64, c: f64, d: f64) -> (Complex, Complex) {
     let re = (a + d) / 2.0;
-    let im = (2.0 * a * d - a * a - d * d - 4.0 * b * c).sqrt() / 2.0;
-    (Complex(re, im), Complex(re, -im))
+    let det =  a * a + d * d + 4.0 * b * c - 2.0 * a * d;
+    if det >= 0.0 {
+        (Complex(re + det.sqrt() / 2.0, 0.0), Complex(re - det.sqrt() / 2.0, 0.0))
+    } else {
+        (Complex(re, (-det).sqrt() / 2.0), Complex(re, -(-det).sqrt() / 2.0))
+    }
 }
 
 
@@ -218,6 +229,7 @@ impl Iterator for EigenValueSolver {
 
 #[cfg(test)]
 mod test {
+
     use super::*;
     use mat_macro::mat_;
 
@@ -256,7 +268,7 @@ mod test {
     }
 
     #[test]
-    fn test_eigen() {
+    fn test_eigenmat() {
         let m = mat_![1.0 4.0; 5.0 2.0;];
         let es = EigenValueSolver::new(m).unwrap();
 
@@ -277,8 +289,27 @@ mod test {
 
         let mut evs = es.eigen_values(1e-2, 999);
         if evs[0].im() > evs[1].im() { evs.swap(0, 1) };
-        assert!((evs[0] - &Complex(1.0, -1.0)).normal() < 1e-2);
-        assert!((evs[1] - &Complex(1.0, 1.0)).normal() < 1e-2)
+        if (evs[0] - &Complex(1.0, -1.0)).normal() < 1e-2 &&
+            (evs[1] - &Complex(1.0, 1.0)).normal() < 1e-2 {}
+        else {
+            panic!("{:?}", &evs);
+        }
  
+    }
+
+    #[test]
+    fn test_eigenvals2() {
+        let m: DataMatrix<f64> = mat_![3 5 0 0;-1 -1 0 0;0 0 1 4; 0 0 5 2;].convert();
+
+        let mut evs = EigenValueSolver::new(m.clone_data())
+            .unwrap()
+            .eigen_values(1e-2, 999);
+        
+        if evs[0].im() > evs[1].im() { evs.swap(0, 1) };
+        if (evs[0] - &Complex(1.0, -1.0)).normal() < 1e-2 &&
+             (evs[1] - &Complex(1.0, 1.0)).normal() < 1e-2 {}
+        else {
+            panic!("{:?}", &evs);
+        }
     }
 }
