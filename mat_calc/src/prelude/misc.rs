@@ -53,6 +53,10 @@ IF BRANCH
     where `test` is a bool expression, if `test` is true, `then` is evaluated,
     otherwise `else` is evaluated and returned
 
+SPECIAL VARIABLE
+    `_` is defined after evaluation of each input line, as the value of the result,
+    if there is no zero.
+
 DEFINING FUNCTIONS
     A kind of simple function is supported, they can be defined using `def`,
         `(def (<function-name> <argument-names>...) <function-body>)`
