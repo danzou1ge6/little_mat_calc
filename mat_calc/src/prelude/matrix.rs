@@ -421,7 +421,23 @@ pub fn diag(args: ObjectPairItem, _: &mut Environment) -> Output {
     }
 }
 
-pub const EXPORTS: [BuiltinFunction; 17] = [
+pub fn dim(args: ObjectPairItem, _: &mut Environment) -> Output {
+    match args {
+        Lit(Matrix(MatrixWrap::Cpl(m))) => {
+            Ok(List(Box::new(ObjectPair {
+                first: Lit(Rat(i32::try_from(m.rows()).unwrap().into())),
+                second: Lit(Rat(i32::try_from(m.cols()).unwrap().into())) })))
+        },
+        Lit(Matrix(MatrixWrap::Rat(m))) => {
+            Ok(List(Box::new(ObjectPair {
+                first: Lit(Rat(i32::try_from(m.rows()).unwrap().into())),
+                second: Lit(Rat(i32::try_from(m.cols()).unwrap().into())) })))
+        },
+        _ => Err(EvalError::typ(format!("Can only get dimension of a matrix")))
+    }
+}
+
+pub const EXPORTS: [BuiltinFunction; 18] = [
     BuiltinFunction {
         f: &inv,
         argn: 1,
@@ -558,5 +574,12 @@ pub const EXPORTS: [BuiltinFunction; 17] = [
             If `m` is one column or one row, then it's data is used to initialize
             a square matrix with diagnol from `m`;
             Otherwise, the diagnol of `m` is taken and returned as a column vector."}
+    },
+    BuiltinFunction {
+        f: &dim,
+        name: "dim",
+        argn: 1,
+        help: indoc! {"
+            Get the dimension of a matrix, returning `(rows cols)`"}
     }
 ];
