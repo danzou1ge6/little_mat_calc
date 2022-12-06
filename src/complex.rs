@@ -85,7 +85,11 @@ impl Display for Complex {
         } else if self.0.is_add_zero() {
             write!(f, "{:.5}j", self.1)
         } else {
-            write!(f, "{:.5}+{:.5}j", self.0, self.1)
+            if self.1 < 0.0 {
+                write!(f, "{:.5}-{:.5}", self.0, -self.1)
+            } else {
+                write!(f, "{:.5}+{:.5}j", self.0, self.1)
+            }
         }
     }
 }

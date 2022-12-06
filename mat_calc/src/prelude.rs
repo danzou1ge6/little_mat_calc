@@ -59,6 +59,25 @@ expression and returning the last one in a function
     )
 )
 
+# adjoint
+(def _help_adjoint \"Calculate the adjoint of a complex\")
+(def (adjoint x)
+    (+
+        (car x)
+        (* -1j (cdr x))
+    )
+)
+
+(def _help_normal2 \"Calculate the normal square of a complex\")
+(def (normal2 x)
+    (* x (adjoint x))
+)
+
+(def _help_madjoint \"Calculate the adjoint matrix of a matirx, if invertable\")
+(def (madjoint x)
+    (* (det x) (inv x))
+)
+
 # eigen values and eigen vectors
 (def _help_eigvec \"Get the eigen vectors of a matrix, repeated ones aren't deleted\")
 (def (eigvec x) (last
@@ -82,6 +101,8 @@ expression and returning the last one in a function
     (_eigvec x eigvals 0)
     nil
 ))
+
+(def preludes \"last pow eigvec abs adjoint normal2 madjoint\")
 )"
 };
 

@@ -14,15 +14,15 @@ LITERALS
     - numbers, which are further categories into
         - rational (integers are included), for example `1/3`, `2`
         - complex (floats are included), for example `0.2` `0.2 + 3.2j`
-          A complex is composed of two float, and float is considered zero
-          if it's smaller than 1e-6
+          A complex is composed of two float, and float is considered zero if it's
+          smaller than 1e-6
     - matrixes, which can consist of rational elements or complex elements
       matrixes are represented by brackets, for example
         `[1 2; 3 4;]`
       `;` is used to sperate rows
     - bool, represented by `#t`(true) and `#f`(false)
-    - symbol table, which is represented in the same way as matrixes do, but
-      only consists of variable names, for example,
+    - symbol table, which is represented in the same way as matrixes do, but only
+      consists of variable names, for example,
         `[a b; c d;]`
 
 DEFINING VARIABLES
@@ -56,6 +56,8 @@ IF BRANCH
 SPECIAL VARIABLE
     `_` is defined after evaluation of each input line, as the value of the result,
     if there is no zero.
+    `preludes` contains the names of pre-defined functions (not builtins, they are
+    written in the calculator language).
 
 DEFINING FUNCTIONS
     A kind of simple function is supported, they can be defined using `def`,
@@ -67,16 +69,23 @@ DEFINING FUNCTIONS
         `(def (pow x n) (if (< n 2) x (* x (pow x (- n 1)))))`
     defines a function that calculate `x * x * ... * x` `n` times
 
+    Help information on a function is stored in the variable
+    `_help_<function-name>`, which can be accessed using `(help <function-name>)`
+
 "};
 
-pub fn help(args: ObjectPairItem, _: &mut Environment) -> Output {
+pub fn help(args: ObjectPairItem, env: &mut Environment) -> Output {
     match args {
         BuiltinFunc(f) => {
             return Ok(Lit(Str(f.help.to_string())));
+        },
+        Func(f) => {
+            let help_name = format!("_help_{}", f.name);
+            return env.find_object(&help_name).map_or(Ok(Lit(Str(format!("No help info for {}", f.name)))), |o| Ok(o));
         }
         Lit(Rat(Rational(0, 1))) => {
             return Ok(Lit(Str(GENERAL_HELP.to_string())));
-        }
+        },
         Lit(Rat(Rational(1, 1))) => {
             let names: Vec<&str> = all_builtins().map(|b| b.name).collect();
             return Ok(Lit(Str(format!(
@@ -84,10 +93,10 @@ pub fn help(args: ObjectPairItem, _: &mut Environment) -> Output {
                 names.join(" "),
                 "Use `(help <name>)` to get detailed information of builtin `<name>`"
             ))));
-        }
+        },
         _ => {
             return Err(EvalError::typ(format!(
-                "Can only call `help` on builtins; Or use`(help 0)` for general help"
+                "Can only call `help` on functions; Or use`(help 0)` for general help"
             )))
         }
     }
@@ -139,7 +148,7 @@ pub const EXPORTS: [BuiltinFunction; 3] = [
         f: &help,
         name: "help",
         argn: 1,
-        help: "Display help information on syntax and builtins.",
+        help: "Display help information on syntax and functions.",
     },
     BuiltinFunction {
         f: &maxrecur,

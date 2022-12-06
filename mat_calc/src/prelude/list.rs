@@ -32,7 +32,7 @@ pub fn cdr(args: ObjectPairItem, _: &mut Environment) -> Output {
         Lit(Cplx(c)) => return Ok(Lit(Cplx(c.im().into()))),
         _ => {
             return Err(EvalError::syntax(
-                "Can only call `cad` on a pair or a rational or a complex".to_string(),
+                "Can only call `cdr` on a pair or a rational or a complex".to_string(),
             ))
         }
     }

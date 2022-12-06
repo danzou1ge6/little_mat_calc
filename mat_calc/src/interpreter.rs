@@ -52,7 +52,11 @@ impl Interpreter {
             env,
         };
 
-        n.eval_line(&get_prelude_src());
+        match n.eval_line(&get_prelude_src()) {
+            PendingResult::Err(e) => panic!("Err loading prelude: {}", e),
+            PendingResult::Ok(_) => {},
+            PendingResult::Pending => panic!("Loading prelude not complete"),
+        }
 
         return n;
     }

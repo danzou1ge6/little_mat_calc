@@ -47,7 +47,7 @@ impl Environment {
     /// Find an object with a name in the frame stack
     ///
     /// Frames are searched from top to bottom
-    fn find_object(&self, name: &str) -> Option<ObjectPairItem> {
+    pub fn find_object(&self, name: &str) -> Option<ObjectPairItem> {
         for frame in self.frames.iter().rev() {
             if let Some(obj) = frame.get(name) {
                 return Some(obj);
