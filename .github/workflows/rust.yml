@@ -1,0 +1,77 @@
+name: Build web
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "master" ]
+  
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: master
+    
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: nightly
+    
+    - name: Run tests (mat)
+      run: cargo test --verbose
+    
+    - name: Run tests (mat_calc)
+      run: cargo test --verbose
+      working-directory: ./mat_calc
+    
+    - name: Install build dependency
+      uses: jetli/wasm-pack-action@v0.4.0
+      with:
+        # Optional version of wasm-pack to install (eg. "v0.9.1", "latest")
+        version: "v0.10.3"
+    
+    - name: Build WASM
+      run: wasm-pack build --target web -v
+      working-directory: ./mat_calc_web
+  
+    - name: Stash build artifacts
+      run: |
+        cp mat_calc_web/pkg ~/pkg -r
+        cp mat_calc_web/index.html ~
+    
+    - name: Checkout ci
+      uses: action/checkout@v3
+      with:
+        ref: ci
+    
+    - name: Copy new artifacts
+      run: |
+        [[ -d pkg ]] && rm -rf pkg
+        [[ -f index.html ]] && rm index.html
+        mv ~/pkg .
+        mv ~/index.html .
+    
+    - name: Add ci changes
+      run: git add -A .
+      
+    - name: Commit ci
+      uses: gha-utilities/workspace-commit@v0.0.4
+      with:
+        author: ${{ github.author }}
+        email: yu_liukun@outlook.com
+        message: Updates compiled site files
+        all: true
+    
+    - name: Push changes
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: ci
+
+      
