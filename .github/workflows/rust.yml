@@ -63,6 +63,7 @@ jobs:
         [[ -f index.html ]] && rm index.html
         mv ~/pkg .
         mv ~/index.html .
+        rm pkg/.gitignore
     
     - name: Add ci changes
       run: git add -A .
