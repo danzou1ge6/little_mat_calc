@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "."
+		},
+		{
+			"path": "../mat_calc_web"
 		}
 	],
 	"settings": {}
