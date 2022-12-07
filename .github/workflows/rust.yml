@@ -44,7 +44,7 @@ jobs:
         version: "v0.10.3"
     
     - name: Build WASM
-      run: wasm-pack build --target web -v
+      run: wasm-pack build --target web
       working-directory: ./mat_calc_web
   
     - name: Stash build artifacts
