@@ -22,4 +22,4 @@ pub fn startup_text() -> String {
 pub const STANDBY_PROMPT: &str = "> ";
 pub const PENDING_PROMPT: &str = ". ";
 pub const ERROR_PROMPT: &str = "! ";
-pub const RESULT_PROMPT: &str = "=> ";
+pub const RESULT_PROMPT: &str = "= ";

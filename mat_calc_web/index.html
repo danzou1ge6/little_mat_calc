@@ -6,9 +6,9 @@
 <body>
     <pre id="output" class="monospace"></pre>
 
-    <div class="input-area" class="monospace">
-        <span id="prompt"></span>
-        <input type="text" id="input"/>
+    <div class="input-area">
+        <span id="prompt" class="monospace"></span>
+        <input type="text" id="input" class="monospace"/>
     </div>
     <script type="module">
         import init, { intp_init, standby_prompt, intp_eval, startup_text, EvalResult } from './pkg/mat_calc_web.js'
@@ -24,7 +24,8 @@
         async function run() {
             await init()
             intp_init()
-            outputField.innerText = startup_text()
+            outputField.innerText = startup_text() + '\n'
+
             lastPrompt = standby_prompt()
             promptBar.innerText = standby_prompt()
 
@@ -37,9 +38,9 @@
                 let prompt = eval_result.prompt()
                 let output = eval_result.output()
 
-                outputField.innerText += '\n' + lastPrompt + ' ' + input
+                outputField.innerText += lastPrompt + ' ' + input + '\n'
                 if (output != '')
-                    outputField.innerText += '\n' + output
+                    outputField.innerText += output + '\n'
                 promptBar.innerText = prompt
 
                 inputField.value = ''
