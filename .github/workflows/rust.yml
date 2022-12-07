@@ -22,15 +22,22 @@ jobs:
     - uses: actions-rs/toolchain@v1
       with:
         toolchain: nightly
+        default: true
     
     - name: Run tests (mat)
-      run: cargo test --verbose
+      uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: --verbose
     
     - name: Run tests (mat_calc)
-      run: cargo test --verbose
-      working-directory: ./mat_calc
-    
-    - name: Install build dependency
+      uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: --verbose
+        working-directory: ./mat_calc
+
+    - name: Install wasm-pack
       uses: jetli/wasm-pack-action@v0.4.0
       with:
         # Optional version of wasm-pack to install (eg. "v0.9.1", "latest")
