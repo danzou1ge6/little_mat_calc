@@ -67,16 +67,8 @@ jobs:
     - name: Add ci changes
       run: git add -A .
       
-    - name: Commit ci
-      uses: gha-utilities/workspace-commit@v0.0.4
-      with:
-        author: ${{ github.author }}
-        email: yu_liukun@outlook.com
-        message: Updates compiled site files
-        all: true
-    
-    - name: Push changes
-      uses: ad-m/github-push-action@master
+    - name: Commit & Push changes
+      uses: actions-js/push@master
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         branch: ci
