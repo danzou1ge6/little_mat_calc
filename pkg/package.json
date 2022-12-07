@@ -1,0 +1,12 @@
+{
+  "name": "mat_calc_web",
+  "version": "1.0.2",
+  "files": [
+    "mat_calc_web_bg.wasm",
+    "mat_calc_web.js",
+    "mat_calc_web.d.ts"
+  ],
+  "module": "mat_calc_web.js",
+  "types": "mat_calc_web.d.ts",
+  "sideEffects": false
+}
