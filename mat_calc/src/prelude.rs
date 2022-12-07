@@ -78,6 +78,24 @@ expression and returning the last one in a function
     (* (det x) (inv x))
 )
 
+(def _help_eigvecof \"Usage: (eigvecof x: matrix v: complex)
+Get the eigen vector of `x` corresponding to eigen value `v`
+\")
+(def (eigvecof x v)
+    (nspace (- x (* v ci (car dim x))))
+)
+
+(def _help_geigvecof \"Usage: (geigvecof x: matrix v: complex)
+Get the generalized eigen vector of `x` corresponding to eigen value `v`\")
+(def (geigvecof x v)
+    (nspace
+        (pow
+            (- x (* v ci (car dim x)))
+            (car dim x)
+        )
+    )
+)
+
 # eigen values and eigen vectors
 (def _help_eigvec \"Get the eigen vectors of a matrix, repeated ones aren't deleted\")
 (def (eigvec x) (last
