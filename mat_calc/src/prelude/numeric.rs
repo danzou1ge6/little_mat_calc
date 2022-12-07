@@ -204,6 +204,16 @@ pub fn or(args: ObjectPairItem, _: &mut Environment) -> Output {
     }
 }
 
+
+pub fn not(args: ObjectPairItem, _: &mut Environment) -> Output {
+    match args {
+        Lit(Bool(b)) => {
+            return Ok(Lit(Bool(!b)))
+        },
+        _ => return Err(EvalError::syntax("You can only 'not' a bool".to_string())),
+    }
+}
+
 pub fn and(args: ObjectPairItem, _: &mut Environment) -> Output {
     match args {
         List(pair) => match (&pair.first, &pair.second) {
@@ -240,7 +250,7 @@ pub fn normal(args: ObjectPairItem, _: &mut Environment) -> Output {
     }
 }
 
-pub const EXPORTS: [BuiltinFunction; 11] = [
+pub const EXPORTS: [BuiltinFunction; 12] = [
     BuiltinFunction {
         f: &add,
         name: "+",
@@ -295,6 +305,12 @@ pub const EXPORTS: [BuiltinFunction; 11] = [
             Usage: (> a b) -> bool
             Compare two numbers.
             If both are complexes, their real parts are compared. "},
+    },
+    BuiltinFunction {
+        f: &not,
+        name: "!",
+        argn: 2,
+        help: "NOT operation"
     },
     BuiltinFunction {
         f: &eq,
