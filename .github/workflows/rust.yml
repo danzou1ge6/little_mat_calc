@@ -46,7 +46,7 @@ jobs:
         cp mat_calc_web/index.html ~
     
     - name: Checkout ci
-      uses: action/checkout@v3
+      uses: actions/checkout@v3
       with:
         ref: ci
     
