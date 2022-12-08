@@ -1,4 +1,4 @@
-use std::ops::DerefMut;
+use std::ops::{DerefMut, Deref};
 
 use mat_calc::eval::Config;
 use mat_calc::interpreter::{Interpreter, PendingResult};
@@ -30,6 +30,23 @@ pub fn _startup_text() -> String {
         compiler_host!()
     )
 }
+
+use std::panic::set_hook;
+
+#[wasm_bindgen]
+pub fn set_panic_hook(f: js_sys::Function) {
+    let f = SendWrapper::new(f);
+
+    set_hook(Box::new(move |info| {
+        let msg = if let Some(s) = info.payload().downcast_ref::<&str>() {
+            format!("{s:?}")
+        } else {
+            format!("A panic occured")
+        };
+        f.deref().call1(&JsValue::undefined(), &JsValue::from_str(&msg)).unwrap();
+    }));
+}
+
 
 #[wasm_bindgen]
 pub fn intp_init() {
