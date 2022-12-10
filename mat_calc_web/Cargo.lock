@@ -59,6 +59,7 @@ dependencies = [
 name = "mat_calc_web"
 version = "1.0.2"
 dependencies = [
+ "indoc",
  "js-sys",
  "mat",
  "mat_calc",

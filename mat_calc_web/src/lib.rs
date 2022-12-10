@@ -6,6 +6,9 @@ use mat_calc::{ERROR_PROMPT, PENDING_PROMPT, RESULT_PROMPT, STANDBY_PROMPT};
 
 use send_wrapper::SendWrapper;
 use wasm_bindgen::prelude::*;
+use indoc::indoc;
+
+
 static mut INTEREPTER: Option<SendWrapper<Interpreter>> = None;
 
 fn _init() {
@@ -24,7 +27,11 @@ use mat_macro::{compiler_host, compiler_version};
 
 pub fn _startup_text() -> String {
     format!(
-        "Little Mat Calculator {} [rustc {}] on {}\nType \"(help 0)\" to get more information",
+        indoc! {"
+        Little Mat Calculator {} [rustc {}] on {}
+        Type \"(help 0)\" or visit
+            https://github.com/danzou1ge6/little_mat_calc/blob/dev/README.md
+        for more information.  "},
         env!("CARGO_PKG_VERSION"),
         compiler_version!(),
         compiler_host!()

@@ -14,3 +14,4 @@ mat_calc = { path = "../mat_calc" }
 mat_macro = { path = "../mat_macro" }
 send_wrapper = "0.6.0"
 js-sys = "^0.3.0"
+indoc = "*"
