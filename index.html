@@ -11,7 +11,7 @@
         <input type="text" id="input" class="monospace"/>
     </div>
     <script type="module">
-        import init, { intp_init, standby_prompt, intp_eval, startup_text, EvalResult } from './pkg/mat_calc_web.js'
+        import init, { set_panic_hook, intp_init, standby_prompt, intp_eval, startup_text, EvalResult } from './pkg/mat_calc_web.js'
         
         const inputField = document.querySelector('#input')
         const outputField = document.querySelector('#output')
@@ -30,6 +30,14 @@
             promptBar.innerText = standby_prompt()
 
             inputField.focus()
+
+            set_panic_hook(msg => {
+                outputField.innerText += "\n\n!!!----------------------------------------------------------------!!!"
+                outputField.innerText += "\nCongratulations! You've crashed Little Mat Calculator!\n";
+                outputField.innerText += "Panic message from Rust:\n"
+                outputField.innerText += msg + '\n'
+                document.querySelector('.input-area').style = "display: none;"
+            })
         }
         run().then(() => {
             

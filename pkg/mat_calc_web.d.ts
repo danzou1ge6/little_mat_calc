@@ -1,6 +1,10 @@
 /* tslint:disable */
 /* eslint-disable */
 /**
+* @param {Function} f
+*/
+export function set_panic_hook(f: Function): void;
+/**
 */
 export function intp_init(): void;
 /**
@@ -34,6 +38,7 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
+  readonly set_panic_hook: (a: number) => void;
   readonly intp_init: () => void;
   readonly standby_prompt: (a: number) => void;
   readonly startup_text: (a: number) => void;
@@ -41,10 +46,11 @@ export interface InitOutput {
   readonly evalresult_output: (a: number, b: number) => void;
   readonly evalresult_prompt: (a: number, b: number) => void;
   readonly intp_eval: (a: number, b: number) => number;
-  readonly __wbindgen_add_to_stack_pointer: (a: number) => number;
-  readonly __wbindgen_free: (a: number, b: number) => void;
   readonly __wbindgen_malloc: (a: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number) => number;
+  readonly __wbindgen_add_to_stack_pointer: (a: number) => number;
+  readonly __wbindgen_free: (a: number, b: number) => void;
+  readonly __wbindgen_exn_store: (a: number) => void;
 }
 
 export type SyncInitInput = BufferSource | WebAssembly.Module;
