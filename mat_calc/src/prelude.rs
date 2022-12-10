@@ -120,7 +120,7 @@ Get the generalized eigen vector of `x` corresponding to eigen value `v`\")
     nil
 ))
 
-(def preludes \"last pow eigvec abs adjoint normal2 madjoint\")
+(def preludes \"last pow eigvec abs adjoint normal2 madjoint eigvecof geigvecof\")
 )"
 };
 
