@@ -9,7 +9,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 wasm-bindgen = "^0.2.0"
-mat = { path = "../" }
+mat = { path = "../", features = ["i64_rational"] }
 mat_calc = { path = "../mat_calc" }
 mat_macro = { path = "../mat_macro" }
 send_wrapper = "0.6.0"

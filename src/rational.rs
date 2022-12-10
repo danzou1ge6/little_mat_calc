@@ -2,6 +2,12 @@ use std::cmp::Ordering;
 use std::fmt::Display;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
+#[cfg(not(i64_integer))]
+type Integer = i32;
+
+#[cfg(i64_integer)]
+type Integer = i64;
+
 /// A rational number
 ///
 /// Rational(1, 2) = 1/2
@@ -10,9 +16,9 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 /// 0 will always be (0, 1);
 /// and only `p` will be negative if `p/q` is negative
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
-pub struct Rational(pub i32, pub i32);
+pub struct Rational(pub Integer, pub Integer);
 
-fn gcd(m: i32, n: i32) -> i32 {
+fn gcd(m: Integer, n: Integer) -> Integer {
     if n == 0 {
         m
     } else {
@@ -32,7 +38,7 @@ impl Rational {
     /// Create a new Rational
     ///
     /// Simplification will be run if using this method
-    pub fn new(mut p: i32, mut q: i32) -> Self {
+    pub fn new(mut p: Integer, mut q: Integer) -> Self {
         if q < 0 {
             p = -p;
             q = -q
@@ -142,8 +148,8 @@ impl Display for Rational {
     }
 }
 
-impl From<i32> for Rational {
-    fn from(i: i32) -> Self {
+impl From<Integer> for Rational {
+    fn from(i: Integer) -> Self {
         Self(i, 1)
     }
 }
@@ -274,7 +280,7 @@ mod from_str {
                     return Ok(Rational::new(p, q));
                 }
             }
-            if let Ok(int) = self.parse::<i32>() {
+            if let Ok(int) = self.parse::<Integer>() {
                 return Ok(Rational::from(int));
             }
             return Err(ParseError::NotARational);
