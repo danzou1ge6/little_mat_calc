@@ -121,3 +121,8 @@ pub use eigen::EigenValueSolver;
 mod normal;
 pub use normal::{col_normal, col_normal_sqr, col_normal_unchecked, col_normal_sqr_unchecked};
 pub use normal::{row_normal, row_normal_sqr, row_normal_sqr_unchecked, row_normal_unchecked};
+pub use normal::{normalize_cols, normalize_rows};
+
+/// A module for using Schmidt procedure to calculate orthogonal
+mod schmidt;
+pub use schmidt::orthogonalize;

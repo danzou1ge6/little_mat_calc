@@ -1,3 +1,5 @@
+use crate::SliceMatrix;
+use crate::element::Inv;
 use crate::matrix::Mat;
 use crate::error::MatError;
 use MatError::*;
@@ -64,6 +66,25 @@ pub fn row_normal_sqr(mat: &dyn Mat<Item = f64>, i: usize) -> Result<f64, MatErr
     }
 
     unsafe { Ok(row_normal_sqr_unchecked(mat, i)) }
+}
+
+pub fn normalize_cols(mat: &dyn Mat<Item = f64>) {
+    for j in 0..mat.cols() {
+        unsafe {
+            let mut col = SliceMatrix::new_unchecked(mat, 0, mat.rows(), j, 1);
+            let col_normal = col_normal_unchecked(mat, j);
+            col.scale(&col_normal.inv());
+        }
+    }
+}
+pub fn normalize_rows(mat: &dyn Mat<Item = f64>) {
+    for i in 0..mat.rows() {
+        unsafe {
+            let mut row = SliceMatrix::new_unchecked(mat, i, 1, 0, mat.cols());
+            let row_normal = row_normal_unchecked(mat, i);
+            row.scale(&row_normal.inv());
+        }
+    }
 }
 
 
