@@ -92,6 +92,21 @@ impl ObjectPairItem {
             second: ObjectPairItem::make_list(v),
         }));
     }
+
+    pub fn unpack(self, argn: usize, put_into: &mut Vec<ObjectPairItem>) -> Option<()> {
+        if argn == 1 {
+            put_into.push(self);
+            return Some(());
+        }
+        match self {
+            ObjectPairItem::List(box ObjectPair { first, second }) => {
+                put_into.push(first);
+                second.unpack(argn - 1, put_into)?;
+                return Some(());
+            },
+            _ => return None
+        }
+    }
 }
 
 mod display {

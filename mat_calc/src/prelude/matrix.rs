@@ -1,7 +1,7 @@
 use crate::eval::BuiltinFunction;
 use crate::eval::{Environment, ObjectPairItem};
 use indoc::indoc;
-use mat::alg;
+use mat::{alg, SliceMatrix};
 use mat::alg::SolveResult;
 use mat::element::LinearElem;
 use mat::element::Inv;
@@ -437,7 +437,50 @@ pub fn dim(args: ObjectPairItem, _: &mut Environment) -> Output {
     }
 }
 
-pub const EXPORTS: [BuiltinFunction; 18] = [
+pub fn slice(args: ObjectPairItem, _: &mut Environment) -> Output {
+    let mut v = Vec::new();
+    if let Some(()) = args.unpack(5, &mut v) {
+        match [v.pop().unwrap(), v.pop().unwrap(), v.pop().unwrap(), v.pop().unwrap(), v.pop().unwrap()] {
+            [
+                Lit(Rat(cols)),
+                Lit(Rat(cb)),
+                Lit(Rat(rows)),
+                Lit(Rat(rb)),
+                Lit(Matrix(MatrixWrap::Cpl(m))),
+            ] => {
+                if rb.1 != 1 || rows.1 != 1 || cb.1 != 1 || cols.1 != 1 {
+                    return Err(EvalError::typ(format!("Rows and cols need to be integers")));
+                }
+                let [rb, rows, cb, cols] = [rb, rows, cb, cols].map(|x| x.0.try_into().unwrap());
+                let slice = SliceMatrix::new(m.as_ref(), rb, rows, cb, cols)
+                    .map_err(|e| EvalError::value(format!("{e}")))?;
+                
+                return Ok(Lit(Matrix(MatrixWrap::Cpl(Rc::new(slice.clone_data())))))
+            },
+            [
+                Lit(Rat(cols)),
+                Lit(Rat(cb)),
+                Lit(Rat(rows)),
+                Lit(Rat(rb)),
+                Lit(Matrix(MatrixWrap::Rat(m))),
+            ] => {
+                if rb.1 != 1 || rows.1 != 1 || cb.1 != 1 || cols.1 != 1 {
+                    return Err(EvalError::typ(format!("Rows and cols need to be integers")));
+                }
+                let [rb, rows, cb, cols] = [rb, rows, cb, cols].map(|x| x.0.try_into().unwrap());
+                let slice = SliceMatrix::new(m.as_ref(), rb, rows, cb, cols)
+                    .map_err(|e| EvalError::value(format!("{e}")))?;
+                
+                return Ok(Lit(Matrix(MatrixWrap::Rat(Rc::new(slice.clone_data())))))
+            }
+            _ => return Err(EvalError::syntax(format!("Need arguments: matrix, integer, integer, integet, integet")))
+        }
+    } else {
+        return Err(EvalError::syntax(format!("Not enough arguments")))
+    }
+}
+
+pub const EXPORTS: [BuiltinFunction; 19] = [
     BuiltinFunction {
         f: &inv,
         argn: 1,
@@ -581,5 +624,13 @@ pub const EXPORTS: [BuiltinFunction; 18] = [
         argn: 1,
         help: indoc! {"
             Get the dimension of a matrix, returning `(rows cols)`"}
+    },
+    BuiltinFunction {
+        f: &slice,
+        name: "slice",
+        argn: 5,
+        help: indoc! {"
+            Usage: (slice m: matrix row-begin rows col-begin cols) -> matrix
+            Get the slice of a matrix"}
     }
 ];

@@ -120,7 +120,13 @@ Get the generalized eigen vector of `x` corresponding to eigen value `v`\")
     nil
 ))
 
-(def preludes \"last pow eigvec abs adjoint normal2 madjoint eigvecof geigvecof\")
+(def _help_row \"Get one row of a matrix\")
+(def (row m i) (slice m i 1 0 (cdr dim m)))
+
+(def _help_col \"Get one column of a matrix\")
+(def (col m i) (slice m 0 (car dim m) i 1))
+
+(def preludes \"last pow eigvec abs adjoint normal2 madjoint eigvecof geigvecof row col\")
 )"
 };
 

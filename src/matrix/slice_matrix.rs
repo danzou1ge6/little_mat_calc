@@ -193,6 +193,12 @@ where
     }
 }
 
+impl<'b, T> Drop for SliceRef<'b, T> where T: LinearElem {
+    fn drop(&mut self) {
+        drop(&mut self.borrow);
+    }
+}
+
 impl<'b, T> Deref for SliceRef<'b, T>
 where
     T: LinearElem,
