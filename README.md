@@ -157,6 +157,8 @@ LMC 也含有一系列预定义函数，这些函数通过 LMC 表达式定义.
 |根据特征值求特征向量    |Yes   |Yes   |            eigvecof        |
 |根据特征值求广义特征向量 |Yes   |Yes   |            geigvecof      |
 |QR分解               |No    |Yes*仅支持实数   |  qr             |
+|正交基化              |Yes   |Yes            |  ortho          |
+|规范化                |No    |Yes*仅支持实数   |  normalize      |
 
 以及一些实用工具
 - `dim` 获取矩阵维数

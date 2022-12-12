@@ -496,7 +496,20 @@ pub fn orthogonalize(args: ObjectPairItem, _: &mut Environment) -> Output {
     }
 }
 
-pub const EXPORTS: [BuiltinFunction; 20] = [
+pub fn normalize_cols(args: ObjectPairItem, _: &mut Environment) -> Output {
+    match args {
+        Lit(Matrix(MatrixWrap::Cpl(m))) => {
+            let ret = m.clone_data();
+            let mut ret: DataMatrix<f64> = ret.convert();
+            alg::normalize_cols(&mut ret);
+            return Ok(Lit(Matrix(MatrixWrap::Cpl(Rc::new(ret.convert())))));
+        },
+        _ => return Err(EvalError::typ(format!("Need a complex matrix as argument")))
+    }
+ 
+}
+
+pub const EXPORTS: [BuiltinFunction; 21] = [
     BuiltinFunction {
         f: &inv,
         argn: 1,
@@ -654,6 +667,14 @@ pub const EXPORTS: [BuiltinFunction; 20] = [
         name: "ortho",
         argn: 1,
         help: indoc! {"
-            Apply Schmidt procedure on the matrix, but not normalizing the matrix."}
+            Apply Schmidt procedure on the matrix's columns, but not normalizing the matrix."}
+    },
+    BuiltinFunction {
+        f: &normalize_cols,
+        name: "normalize",
+        argn: 1,
+        help: indoc! {"
+            Normalize the columns of a float matrix, which is represented using the
+            real part of a complex matrix"}
     }
 ];
