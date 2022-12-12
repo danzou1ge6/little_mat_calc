@@ -70,9 +70,9 @@ where
 
 /// Solve linear equation; supports occassion of infinite solution.
 /// Caution that the inputed matrixes are ruined by elimination
-pub fn solve<T>(
-    coef: &mut dyn Mat<Item = T>,
-    b: &mut dyn Mat<Item = T>,
+pub fn solve<'a, T>(
+    coef: &'a mut dyn Mat<Item = T>,
+    b: &'a mut dyn Mat<Item = T>,
 ) -> Result<SolveResult<T>, MatError>
 where
     T: LinearElem + Inv,

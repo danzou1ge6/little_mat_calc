@@ -1,11 +1,16 @@
+use std::ops::DerefMut;
+
 use super::Mat;
 use crate::element::LinearElem;
 use crate::error::MatError;
 use MatError::*;
 
 /// The matrix that is concated by many other matrix
-pub struct ConcatedMatrix<'a, T> {
-    data: Vec<&'a mut dyn Mat<Item = T>>,
+pub struct ConcatedMatrix<'a, T, C>
+where
+    C: DerefMut<Target = dyn Mat<Item = T> + 'a>,
+{
+    data: Vec<C>,
     rows: usize,
     cols: usize,
     row_sizes: Vec<usize>,
@@ -13,9 +18,10 @@ pub struct ConcatedMatrix<'a, T> {
     is_transposed: bool,
 }
 
-impl<'a, T> ConcatedMatrix<'a, T>
+impl<'a, T, C> ConcatedMatrix<'a, T, C>
 where
     T: LinearElem,
+    C: DerefMut<Target = dyn Mat<Item = T> + 'a>,
 {
     /// Calculate the index of the matrix block, and the index whtin the block holding
     /// the desired element
@@ -35,23 +41,11 @@ where
         ((block_i, block_j), (i, j))
     }
 
-    /// Create a new [`ConcatedMatrix`] using vector of blocks and the dimension. The length of
-    /// the blocks vector is checked against the dimension
-    ///
-    /// If the dimension is knwon at compile time, consider using [`crate::concated_mat`] macro
-    pub fn new(
-        data: Vec<&'a mut dyn Mat<Item = T>>,
+    pub fn count_sizes(
+        data: &Vec<C>,
         rows: usize,
         cols: usize,
-    ) -> Result<Self, MatError> {
-        if data.len() != rows * cols {
-            return Err(BadInitVector {
-                len: data.len(),
-                cols,
-                rows,
-            });
-        }
-
+    ) -> Result<(Vec<usize>, Vec<usize>), MatError> {
         let mut row_sizes: Vec<usize> = (0..rows).collect();
         for i in 0..rows {
             row_sizes[i] = data[i * cols].rows();
@@ -84,6 +78,24 @@ where
             }
         }
 
+        Ok((row_sizes, col_sizes))
+    }
+
+    /// Create a new [`ConcatedMatrix`] using vector of blocks and the dimension. The length of
+    /// the blocks vector is checked against the dimension
+    ///
+    /// If the dimension is knwon at compile time, consider using [`crate::concated_mat`] macro
+    pub fn new(data: Vec<C>, rows: usize, cols: usize) -> Result<Self, MatError> {
+        if data.len() != rows * cols {
+            return Err(BadInitVector {
+                len: data.len(),
+                cols,
+                rows,
+            });
+        }
+
+        let (row_sizes, col_sizes) = ConcatedMatrix::count_sizes(&data, rows, cols)?;
+
         Ok(ConcatedMatrix {
             data,
             rows: row_sizes.iter().sum(),
@@ -95,9 +107,10 @@ where
     }
 }
 
-impl<'a, T> Mat for ConcatedMatrix<'a, T>
+impl<'a, T, C> Mat for ConcatedMatrix<'a, T, C>
 where
     T: LinearElem,
+    C: DerefMut<Target = dyn Mat<Item = T> + 'a>,
 {
     type Item = T;
 
@@ -134,18 +147,20 @@ mod display {
     use super::*;
     use std::fmt::{Debug, Display};
 
-    impl<T> Display for ConcatedMatrix<'_, T>
+    impl<'a, T, C> Display for ConcatedMatrix<'a, T, C>
     where
         T: LinearElem + Display,
+        C: DerefMut<Target = dyn Mat<Item = T> + 'a>,
     {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             mat_print_buf(self, f)
         }
     }
 
-    impl<T> Debug for ConcatedMatrix<'_, T>
+    impl<'a, T, C> Debug for ConcatedMatrix<'a, T, C>
     where
         T: LinearElem + Display,
+        C: DerefMut<Target = dyn Mat<Item = T> + 'a>,
     {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             mat_print_buf(self, f)
@@ -164,7 +179,12 @@ mod test {
         let mut a: DataMatrix<i32> = mat_![1 2;];
         let mut b: DataMatrix<i32> = mat_![3 4;];
 
-        let m = concated_mat_![(&mut a); (&mut b);].unwrap().transposed();
+        let m = concated_mat_![
+            (&mut a as &mut dyn Mat<Item = _>);
+            (&mut b as &mut dyn Mat<Item = _>);
+        ]
+        .unwrap()
+        .transposed();
 
         assert_eq!(m.clone_data(), mat_![1 3; 2 4;]);
     }

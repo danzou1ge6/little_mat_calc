@@ -21,6 +21,7 @@ use element::*;
 pub use eliminated_matrix::EliminatedMatrix;
 pub use mat_block::MatBlock;
 pub use slice_matrix::SliceMatrix;
+pub use slice_matrix::RcSliceMatrix;
 
 /// The trait for a *matrix* that supports linear operations
 pub trait Mat {

@@ -1,6 +1,7 @@
+#![feature(negative_impls)]
+
 /// Implements a [`Rational`] in the form of fraction
 pub mod rational;
-
 /// Implements a [`Polynomial`]
 pub mod polynomial;
 
