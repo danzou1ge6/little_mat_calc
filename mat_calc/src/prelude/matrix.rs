@@ -480,7 +480,23 @@ pub fn slice(args: ObjectPairItem, _: &mut Environment) -> Output {
     }
 }
 
-pub const EXPORTS: [BuiltinFunction; 19] = [
+pub fn orthogonalize(args: ObjectPairItem, _: &mut Environment) -> Output {
+    match args {
+        Lit(Matrix(MatrixWrap::Rat(m))) => {
+            let mut ret = m.clone_data();
+            alg::orthogonalize(&mut ret);
+            return Ok(Lit(Matrix(MatrixWrap::Rat(Rc::new(ret)))));
+        },
+        Lit(Matrix(MatrixWrap::Cpl(m))) => {
+            let mut ret = m.clone_data();
+            alg::orthogonalize(&mut ret);
+            return Ok(Lit(Matrix(MatrixWrap::Cpl(Rc::new(ret)))));
+        },
+        _ => return Err(EvalError::typ(format!("Need a matrix as argument")))
+    }
+}
+
+pub const EXPORTS: [BuiltinFunction; 20] = [
     BuiltinFunction {
         f: &inv,
         argn: 1,
@@ -632,5 +648,12 @@ pub const EXPORTS: [BuiltinFunction; 19] = [
         help: indoc! {"
             Usage: (slice m: matrix row-begin rows col-begin cols) -> matrix
             Get the slice of a matrix"}
+    },
+    BuiltinFunction {
+        f: &orthogonalize,
+        name: "ortho",
+        argn: 1,
+        help: indoc! {"
+            Apply Schmidt procedure on the matrix, but not normalizing the matrix."}
     }
 ];

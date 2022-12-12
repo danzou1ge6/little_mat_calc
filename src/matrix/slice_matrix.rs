@@ -74,6 +74,20 @@ where
             ))
         }
     }
+
+    pub unsafe fn row_unchecked(origin: &'a dyn Mat<Item = T>, i: usize) -> Self {
+        Self::new_unchecked(origin, i, 1, 0, origin.cols())
+    }
+    pub unsafe fn col_unchecked(origin: &'a dyn Mat<Item = T>, j: usize) -> Self {
+        Self::new_unchecked(origin, 0, origin.rows(), j, 1)
+    }
+
+    pub fn row(origin: &'a dyn Mat<Item = T>, i: usize) -> Result<Self, MatError> {
+        Self::new(origin, i, 1, 0, origin.cols())
+    }
+    pub fn col(origin: &'a dyn Mat<Item = T>, j: usize) -> Result<Self, MatError> {
+        Self::new(origin, 0, origin.rows(), j, 1)
+    }
 }
 
 impl<'a, T> Clone for SliceMatrix<'a, T>
