@@ -10,7 +10,7 @@ checksum = "adab1eaa3408fb7f0c777a73e7465fd5656136fc93b670eb6df3c88c2c1344e3"
 
 [[package]]
 name = "mat"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "mat_macro",
  "unicode-width",
@@ -18,7 +18,7 @@ dependencies = [
 
 [[package]]
 name = "mat_calc"
-version = "1.0.2"
+version = "1.0.3"
 dependencies = [
  "indoc",
  "mat",

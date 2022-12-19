@@ -40,7 +40,7 @@ dependencies = [
 
 [[package]]
 name = "mat"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "mat_macro",
  "unicode-width",
@@ -48,7 +48,7 @@ dependencies = [
 
 [[package]]
 name = "mat_calc"
-version = "1.0.2"
+version = "1.0.3"
 dependencies = [
  "indoc",
  "mat",
@@ -57,7 +57,7 @@ dependencies = [
 
 [[package]]
 name = "mat_calc_web"
-version = "1.0.2"
+version = "1.0.3"
 dependencies = [
  "indoc",
  "js-sys",
