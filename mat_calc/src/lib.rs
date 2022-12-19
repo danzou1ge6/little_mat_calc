@@ -9,13 +9,16 @@ mod table;
 mod token_pair;
 
 use mat_macro::{compiler_host, compiler_version};
+use indoc::indoc;
 
 pub fn startup_text() -> String {
     format!(
-        "Little Mat Calculator {} [rustc {}] on {}\nType \".help\" to get more information",
+        indoc !{"
+        Little Mat Calculator {} [rustc {}] on {}
+        Type \".help\" to get more information"},
         env!("CARGO_PKG_VERSION"),
         compiler_version!(),
-        compiler_host!()
+        compiler_host!(),
     )
 }
 

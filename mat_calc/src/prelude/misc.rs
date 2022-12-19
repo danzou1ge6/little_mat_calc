@@ -111,9 +111,9 @@ pub fn maxrecur(args: ObjectPairItem, env: &mut Environment) -> Output {
                 )));
             }
             if r.0 == 0 {
-                let x: i32 = env.config.max_recursion.try_into().map_err(|_| {
+                let x: i64 = env.config.max_recursion.try_into().map_err(|_| {
                     EvalError::value(format!(
-                        "Current recursion limit is too large to represent in i32"
+                        "Current recursion limit is too large to represent in i64"
                     ))
                 })?;
                 return Ok(Lit(Rat(x.into())));

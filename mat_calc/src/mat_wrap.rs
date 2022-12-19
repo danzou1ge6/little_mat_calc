@@ -198,10 +198,11 @@ mod test {
             as &mut dyn Iterator<Item = &str>)
             .try_into()
             .unwrap();
+        
         match mw.matrix().unwrap() {
             MatrixWrap::Rat(r) => assert_eq!(
                 r.as_ref() as &dyn Mat<Item = Rational>,
-                &mat![1 1; 2 3;].convert() as &dyn Mat<Item = Rational>
+                &mat![(1 as i64) 1; 2 3;].convert() as &dyn Mat<Item = Rational>
             ),
             _ => panic!("should be rational"),
         }

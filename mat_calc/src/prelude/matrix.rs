@@ -70,11 +70,11 @@ pub fn reduce(args: ObjectPairItem, _: &mut Environment) -> Output {
 pub fn rank(args: ObjectPairItem, _: &mut Environment) -> Output {
     match args {
         Lit(Matrix(MatrixWrap::Cpl(m))) => {
-            let r = m.clone_data().eliminated().rank() as i32;
+            let r = m.clone_data().eliminated().rank() as i64;
             return Ok(Lit(Rat(r.into())));
         }
         Lit(Matrix(MatrixWrap::Rat(m))) => {
-            let r = m.clone_data().eliminated().rank() as i32;
+            let r = m.clone_data().eliminated().rank() as i64;
             return Ok(Lit(Rat(r.into())));
         }
         _ => {
@@ -425,13 +425,13 @@ pub fn dim(args: ObjectPairItem, _: &mut Environment) -> Output {
     match args {
         Lit(Matrix(MatrixWrap::Cpl(m))) => {
             Ok(List(Box::new(ObjectPair {
-                first: Lit(Rat(i32::try_from(m.rows()).unwrap().into())),
-                second: Lit(Rat(i32::try_from(m.cols()).unwrap().into())) })))
+                first: Lit(Rat(i64::try_from(m.rows()).unwrap().into())),
+                second: Lit(Rat(i64::try_from(m.cols()).unwrap().into())) })))
         },
         Lit(Matrix(MatrixWrap::Rat(m))) => {
             Ok(List(Box::new(ObjectPair {
-                first: Lit(Rat(i32::try_from(m.rows()).unwrap().into())),
-                second: Lit(Rat(i32::try_from(m.cols()).unwrap().into())) })))
+                first: Lit(Rat(i64::try_from(m.rows()).unwrap().into())),
+                second: Lit(Rat(i64::try_from(m.cols()).unwrap().into())) })))
         },
         _ => Err(EvalError::typ(format!("Can only get dimension of a matrix")))
     }

@@ -2,11 +2,15 @@ use std::cmp::Ordering;
 use std::fmt::Display;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub, SubAssign};
 
-#[cfg(not(i64_integer))]
+#[cfg(not(feature = "i64_rational"))]
 type Integer = i32;
+#[cfg(not(feature = "i64_rational"))]
+pub const INTEGER: &str = "i32";
 
-#[cfg(i64_integer)]
+#[cfg(feature = "i64_rational")]
 type Integer = i64;
+#[cfg(feature = "i64_rational")]
+pub const INTEGER: &str = "i64";
 
 /// A rational number
 ///
@@ -138,8 +142,8 @@ impl Div<&Self> for Rational {
 
 impl From<Rational> for f64 {
     fn from(value: Rational) -> Self {
-        let p: f64 = value.0.into();
-        let q: f64 = value.1.into();
+        let p: f64 = value.0 as f64;  // No big deal to go wrong
+        let q: f64 = value.1 as f64;
         p / q
     }
 }
