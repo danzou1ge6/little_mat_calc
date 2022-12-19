@@ -1,6 +1,6 @@
 {
   "name": "mat_calc_web",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "files": [
     "mat_calc_web_bg.wasm",
     "mat_calc_web.js",
