@@ -111,7 +111,15 @@ impl Mul<&Self> for Rational {
     type Output = Self;
 
     fn mul(self, rhs: &Self) -> Self::Output {
-        let mut ret = Rational(self.0 * rhs.0, self.1 * rhs.1);
+        let (p1, q2) = {
+            let h = gcd(self.0, rhs.1);
+            (self.0 / h, rhs.1 / h)
+        };
+        let (p2, q1) = {
+            let h = gcd(self.1, rhs.0);
+            (rhs.0 / h, self.1 / h)
+        };
+        let mut ret = Rational(p1 * p2, q1 * q2);
         ret.simplify();
         ret
     }
@@ -240,7 +248,7 @@ mod test {
     }
     #[test]
     fn test_mul() {
-        assert_eq!(rational!(2, 3) * &rational!(9, 7), rational!(6, 7))
+        assert_eq!(rational!(2, 3) * &rational!(9, 8), rational!(3, 4))
     }
     #[test]
     fn test_div() {
